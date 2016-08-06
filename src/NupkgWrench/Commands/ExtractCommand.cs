@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NupkgWrench.Tests
+namespace NupkgWrench.Commands
 {
-    public class TransformTests
+    public class ExtractCommand
     {
-
     }
 }

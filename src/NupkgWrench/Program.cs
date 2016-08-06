@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace NupkgWrench
 {
@@ -38,22 +40,23 @@ namespace NupkgWrench
             }
 #endif
 
-            var app = new CommandLineApplication();
-            app.Name = "sleet";
-            app.FullName = "Sleet";
-            app.HelpOption("-h|--help");
-            app.VersionOption("--version", "1.0.0");
+            var assemblyVersion = NuGetVersion.Parse(typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
 
-            InitCommand.Register(app, log);
-            PushCommand.Register(app, log);
-            DeleteCommand.Register(app, log);
-            ValidateCommand.Register(app, log);
-            StatsCommand.Register(app, log);
-            CreateConfigCommand.Register(app, log);
+            var app = new CommandLineApplication();
+            app.Name = "NupkgWrench";
+            app.FullName = "nupkg wrench";
+            app.HelpOption(Constants.HelpOption);
+            app.VersionOption("--version", assemblyVersion.ToNormalizedString());
+
+            NuspecCommand.Register(app, log);
+            FilesCommand.Register(app, log);
+            IdCommand.Register(app, log);
+            VersionCommand.Register(app, log);
 
             app.OnExecute(() =>
             {
                 app.ShowHelp();
+
                 return 0;
             });
 

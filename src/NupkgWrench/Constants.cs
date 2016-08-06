@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NupkgWrench.Tests
+namespace NupkgWrench
 {
-    public class TransformTests
+    internal class Constants
     {
-
+        internal const string HelpOption = "-h|--help";
     }
 }

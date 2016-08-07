@@ -7,20 +7,18 @@ using NuGet.Common;
 
 namespace NupkgWrench
 {
-    internal static class NuspecCommand
+    internal static class ContentFilesCommand
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            var parentCommand = cmdApp.Command("nuspec", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            var parentCommand = cmdApp.Command("contentfiles", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
 
-            EditCommand.Register(parentCommand, log);
-            ShowCommand.Register(parentCommand, log);
-            ContentFilesCommand.Register(parentCommand, log);
+            AddContentFilesCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Nuspec commands.";
+            cmd.Description = "Nuspec content files commands.";
 
             cmd.HelpOption(Constants.HelpOption);
 

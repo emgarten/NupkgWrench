@@ -6,7 +6,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NupkgWrench
 {
@@ -17,8 +20,7 @@ namespace NupkgWrench
         /// </summary>
         public static void AddOrUpdateMetadataElement(XDocument doc, string name, string value)
         {
-            var package = doc.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("package", StringComparison.OrdinalIgnoreCase));
-            var metadata = package?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("metadata", StringComparison.OrdinalIgnoreCase));
+            var metadata = GetMetadataElement(doc);
 
             if (metadata == null)
             {
@@ -46,6 +48,18 @@ namespace NupkgWrench
             }
         }
 
+        /// <summary>
+        /// Get nuspec metadata element
+        /// </summary>
+        public static XElement GetMetadataElement(XDocument doc)
+        {
+            var package = doc.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("package", StringComparison.OrdinalIgnoreCase));
+            return package?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("metadata", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Add or update an xml zip entry
+        /// </summary>
         public static void AddOrReplaceZipEntry(string nupkgPath, string filePath, XDocument doc, ILogger log)
         {
             using (var stream = new MemoryStream())
@@ -56,6 +70,9 @@ namespace NupkgWrench
             }
         }
 
+        /// <summary>
+        /// Add or update a zip entry
+        /// </summary>
         public static void AddOrReplaceZipEntry(string nupkgPath, string filePath, Stream stream, ILogger log)
         {
             stream.Seek(0, SeekOrigin.Begin);
@@ -102,7 +119,48 @@ namespace NupkgWrench
                               .Replace(@"\*", ".*")
                               .Replace(@"\?", ".");
 
-            return Regex.IsMatch(input, $"^{wildcardPattern}$");
+            // Regex match, ignore case since package ids and versions are case insensitive
+            return Regex.IsMatch(input.ToLowerInvariant(), $"^{wildcardPattern}$".ToLowerInvariant());
+        }
+
+        /// <summary>
+        /// Filter packages
+        /// </summary>
+        public static IEnumerable<string> GetPackagesWithFilter(CommandOption idFilter, CommandOption versionFilter, string[] inputs)
+        {
+            return GetPackagesWithFilter(idFilter.HasValue() ? idFilter.Value() : null,
+                versionFilter.HasValue() ? versionFilter.Value() : null,
+                inputs);
+        }
+
+        /// <summary>
+        /// Filter packages
+        /// </summary>
+        public static IEnumerable<string> GetPackagesWithFilter(string idFilter, string versionFilter, string[] inputs)
+        {
+            foreach (var path in GetPackages(inputs))
+            {
+                if (string.IsNullOrEmpty(idFilter) && string.IsNullOrEmpty(versionFilter))
+                {
+                    yield return path;
+                }
+                else
+                {
+                    using (var reader = new PackageArchiveReader(path))
+                    {
+                        var identity = reader.GetIdentity();
+
+                        // Check all forms of the version
+                        if (IsMatch(identity.Id, idFilter)
+                            && (IsMatch(identity.Version.ToString(), versionFilter)
+                            || IsMatch(identity.Version.ToNormalizedString(), versionFilter)
+                            || IsMatch(identity.Version.ToFullString(), versionFilter)))
+                        {
+                            yield return path;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -13,7 +13,8 @@ namespace NupkgWrench
         {
             var parentCommand = cmdApp.Command("dependencies", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
 
-            // EditCommand.Register(parentCommand, log);
+            DependenciesClearCommand.Register(parentCommand, log);
+            DependenciesEmptyGroupCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

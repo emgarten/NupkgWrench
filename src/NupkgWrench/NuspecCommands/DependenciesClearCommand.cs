@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 
 namespace NupkgWrench
@@ -13,20 +14,16 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("add", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            cmdApp.Command("clear", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Modifies or adds a top level property to the nuspec in a package.";
+            cmd.Description = "Clear all dependencies or a set of target framework group dependencies.";
 
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
-            var include = cmd.Option("--include", "content files include attribute value.", CommandOptionType.SingleValue);
-            var exclude = cmd.Option("--exclude", "content files include attribute value.", CommandOptionType.SingleValue);
-            var buildAction = cmd.Option("--build-action", "content files buildAction attribute value.", CommandOptionType.SingleValue);
-            var copyToOutput = cmd.Option("--copy-to-output", "content files copyToOutput attribute value. (true|false)", CommandOptionType.SingleValue);
-            var flatten = cmd.Option("--flatten", "content files flatten attribute value. (true|false)", CommandOptionType.SingleValue);
+            var frameworkOption = cmd.Option("-f|--framework", "Group target frameworks. Use 'any' for the default group. If not specified all dependencies are removed.", CommandOptionType.MultipleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -35,24 +32,10 @@ namespace NupkgWrench
 
             cmd.HelpOption(Constants.HelpOption);
 
-            var required = new List<CommandOption>()
-            {
-                include
-            };
-
             cmd.OnExecute(() =>
             {
                 try
                 {
-                    // Validate parameters
-                    foreach (var requiredOption in required)
-                    {
-                        if (!requiredOption.HasValue())
-                        {
-                            throw new ArgumentException($"Missing required parameter --{requiredOption.LongName}.");
-                        }
-                    }
-
                     var inputs = argRoot.Values;
 
                     if (inputs.Count < 1)
@@ -60,11 +43,25 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var packages = Util.GetPackages(inputs.ToArray());
+                    var removeForFrameworks = new HashSet<NuGetFramework>();
+
+                    if (frameworkOption.HasValue())
+                    {
+                        foreach (var option in frameworkOption.Values)
+                        {
+                            var fw = NuGetFramework.Parse(option);
+
+                            log.LogInformation($"removing dependencies for {fw.GetShortFolderName()}");
+
+                            removeForFrameworks.Add(fw);
+                        }
+                    }
+
+                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, inputs.ToArray());
 
                     foreach (var package in packages)
                     {
-                        log.LogMinimal($"modifying {package}");
+                        log.LogMinimal($"processing {package}");
 
                         // Get nuspec file path
                         string nuspecPath = null;
@@ -77,41 +74,63 @@ namespace NupkgWrench
 
                         var metadata = Util.GetMetadataElement(nuspecXml);
                         var ns = metadata.GetDefaultNamespace().NamespaceName;
-                        var contentFilesNode = metadata.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("contentFiles", StringComparison.OrdinalIgnoreCase));
+                        var dependenciesNode = metadata.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("dependencies", StringComparison.OrdinalIgnoreCase));
 
-                        if (contentFilesNode == null)
+                        if (dependenciesNode != null)
                         {
-                            contentFilesNode = new XElement(XName.Get("contentFiles", ns));
-                            metadata.Add(contentFilesNode);
+                            if (removeForFrameworks.Count < 1)
+                            {
+                                dependenciesNode.Remove();
+                            }
+                            else
+                            {
+                                foreach (var fw in removeForFrameworks)
+                                {
+                                    if (fw.IsAny)
+                                    {
+                                        // Remove non-group items
+                                        foreach (var node in dependenciesNode.Elements()
+                                            .Where(e => e.Name.LocalName.Equals("dependency", StringComparison.OrdinalIgnoreCase))
+                                            .ToArray())
+                                        {
+                                            node.Remove();
+                                        }
+
+                                        // Remove groups with no tfm
+                                        foreach (var node in dependenciesNode.Elements()
+                                            .Where(e => e.Name.LocalName.Equals("group", StringComparison.OrdinalIgnoreCase)
+                                                && !e.Attributes(XName.Get("targetFramework")).Any())
+                                            .ToArray())
+                                        {
+                                            node.Remove();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        foreach (var node in dependenciesNode.Elements()
+                                            .Where(e => e.Name.LocalName.Equals("group", StringComparison.OrdinalIgnoreCase))
+                                            .ToArray())
+                                        {
+                                            var tfm = node.Attribute(XName.Get("targetFramework"))?.Value;
+
+                                            if (!string.IsNullOrEmpty(tfm))
+                                            {
+                                                var framework = NuGetFramework.Parse(tfm);
+
+                                                if (framework.Equals(fw))
+                                                {
+                                                    // Remove matching nodes
+                                                    node.Remove();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Update zip
+                            Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
                         }
-
-                        var entryNode = new XElement(XName.Get("files", ns));
-                        entryNode.Add(new XAttribute(XName.Get("include"), include.Value()));
-
-                        if (exclude.HasValue())
-                        {
-                            entryNode.Add(new XAttribute(XName.Get("exclude"), exclude.Value()));
-                        }
-
-                        if (buildAction.HasValue())
-                        {
-                            entryNode.Add(new XAttribute(XName.Get("buildAction"), buildAction.Value()));
-                        }
-
-                        if (copyToOutput.HasValue())
-                        {
-                            entryNode.Add(new XAttribute(XName.Get("copyToOutput"), copyToOutput.Value()));
-                        }
-
-                        if (flatten.HasValue())
-                        {
-                            entryNode.Add(new XAttribute(XName.Get("flatten"), flatten.Value()));
-                        }
-
-                        contentFilesNode.AddFirst(entryNode);
-
-                        // Update zip
-                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
                     }
 
                     return 0;

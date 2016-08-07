@@ -16,6 +16,8 @@ namespace NupkgWrench
             EditCommand.Register(parentCommand, log);
             ShowCommand.Register(parentCommand, log);
             ContentFilesCommand.Register(parentCommand, log);
+            DependenciesCommand.Register(parentCommand, log);
+            FrameworkAssembliesCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

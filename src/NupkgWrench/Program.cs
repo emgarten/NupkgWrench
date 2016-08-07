@@ -57,6 +57,7 @@ namespace NupkgWrench
             ListCommand.Register(app, log);
             UpdateFileNameCommand.Register(app, log);
             ReleaseCommand.Register(app, log);
+            ValidateCommand.Register(app, log);
 
             app.OnExecute(() =>
             {

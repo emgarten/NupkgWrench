@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-
+using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -29,8 +29,6 @@ namespace NupkgWrench
             {
                 try
                 {
-                    cmd.ShowRootCommandFullNameAndVersion();
-
                     var inputs = argRoot.Values;
 
                     if (inputs.Count < 1)
@@ -39,13 +37,28 @@ namespace NupkgWrench
                     }
 
                     var packages = Util.GetPackages(inputs.ToArray());
+                    var exitCode = 0;
 
                     foreach (var package in packages)
                     {
                         // Verify package
+                        try
+                        {
+                            using (var reader = new PackageArchiveReader(package))
+                            {
+                                var identity = reader.GetIdentity();
+
+                                log.LogMinimal($"valid : {package}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogMinimal($"error : {package} : {ex.Message}");
+                            exitCode = 1;
+                        }
                     }
 
-                    return 0;
+                    return exitCode;
                 }
                 catch (Exception ex)
                 {

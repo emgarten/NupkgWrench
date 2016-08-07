@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
@@ -109,7 +107,7 @@ namespace NupkgWrench
 
                             var newIdentity = new PackageIdentity(identity.Id, updatedVersion);
 
-                            packageSet.Add(new Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>(package, identity , nuspecPath, nuspecXml, newIdentity));
+                            packageSet.Add(new Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>(package, identity, nuspecPath, nuspecXml, newIdentity));
 
                             updatedIds.Add(identity.Id);
                         }
@@ -185,8 +183,15 @@ namespace NupkgWrench
                         // Update the nuspec file in the zip
                         Util.AddOrReplaceZipEntry(package.Item1, package.Item3, nuspec, log);
 
+                        var newFileName = $"{package.Item5.Id}.{package.Item5.Version.ToString()}.nupkg";
+
+                        if (package.Item1.EndsWith(".symbols.nupkg"))
+                        {
+                            newFileName = $"{package.Item5.Id}.{package.Item5.Version.ToString()}.symbols.nupkg";
+                        }
+
                         // Move the file
-                        var newPath = Path.Combine(Path.GetDirectoryName(package.Item1), $"{package.Item5.Id}.{package.Item5.Version.ToString()}.nupkg");
+                        var newPath = Path.Combine(Path.GetDirectoryName(package.Item1), newFileName);
                         if (!newPath.Equals(package.Item1, StringComparison.Ordinal))
                         {
                             log.LogMinimal($"{package.Item1} -> {newPath}");

@@ -7,21 +7,18 @@ using NuGet.Common;
 
 namespace NupkgWrench
 {
-    internal static class FilesCommand
+    internal static class DependenciesCommand
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            var parentCommand = cmdApp.Command("files", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            var parentCommand = cmdApp.Command("dependencies", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
 
-            ListFilesCommand.Register(parentCommand, log);
-            AddFilesCommand.Register(parentCommand, log);
-            RemoveFilesCommand.Register(parentCommand, log);
-            EmptyFolderCommand.Register(parentCommand, log);
+            // EditCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Nupkg file commands.";
+            cmd.Description = "Modify the dependencies section of a nuspec.";
 
             cmd.HelpOption(Constants.HelpOption);
 

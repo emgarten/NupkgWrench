@@ -15,6 +15,22 @@ namespace NupkgWrench
 {
     public static class Util
     {
+        public static void RemoveFiles(ZipArchive zip, string pathWildcard, ILogger log)
+        {
+            var entries = zip.Entries.Where(e => IsMatch(e.FullName, pathWildcard)).ToList();
+
+            foreach (var entry in entries)
+            {
+                log.LogInformation($"removing : {entry.FullName}");
+                entry.Delete();
+            }
+        }
+
+        public static string GetZipPath(string path)
+        {
+            return path.Replace("\\", "/").TrimStart('/');
+        }
+
         /// <summary>
         /// Add or update a root level metadata entry in a nuspec file
         /// </summary>
@@ -81,26 +97,26 @@ namespace NupkgWrench
             using (var nupkgStream = File.Open(nupkgPath, FileMode.Open, FileAccess.ReadWrite))
             using (var zip = new ZipArchive(nupkgStream, ZipArchiveMode.Update))
             {
-                var exists = zip.Entries.Any(e => e.FullName.Equals(filePath, StringComparison.OrdinalIgnoreCase));
+                AddOrReplaceZipEntry(zip, nupkgPath, filePath, stream, log);
+            }
+        }
 
-                ZipArchiveEntry entry = null;
+        public static void AddOrReplaceZipEntry(ZipArchive zip, string nupkgPath, string filePath, Stream stream, ILogger log)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
 
-                if (exists)
-                {
-                    entry = zip.GetEntry(filePath);
+            // normalize path
+            filePath = Util.GetZipPath(filePath);
 
-                    // Correct casing if needed
-                    filePath = entry.FullName;
-                    entry.Delete();
-                }
+            // Remove existing file
+            RemoveFiles(zip, filePath, log);
 
-                log.LogInformation($"{nupkgPath} : updating {filePath}");
+            log.LogInformation($"{nupkgPath} : adding {filePath}");
 
-                entry = zip.CreateEntry(filePath, CompressionLevel.Optimal);
-                using (var entryStream = entry.Open())
-                {
-                    stream.CopyTo(entryStream);
-                }
+            var entry = zip.CreateEntry(filePath, CompressionLevel.Optimal);
+            using (var entryStream = entry.Open())
+            {
+                stream.CopyTo(entryStream);
             }
         }
 
@@ -115,12 +131,14 @@ namespace NupkgWrench
                 return true;
             }
 
+            var normalizedInput = input.Replace("\\", "/").ToLowerInvariant();
+
             var regexPattern = Regex.Escape(wildcardPattern)
                               .Replace(@"\*", ".*")
                               .Replace(@"\?", ".");
 
             // Regex match, ignore case since package ids and versions are case insensitive
-            return Regex.IsMatch(input.ToLowerInvariant(), $"^{regexPattern}$".ToLowerInvariant());
+            return Regex.IsMatch(normalizedInput, $"^{regexPattern}$".ToLowerInvariant());
         }
 
         /// <summary>

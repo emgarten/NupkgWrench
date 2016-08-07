@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -46,7 +47,10 @@ namespace NupkgWrench
                         {
                             using (var reader = new PackageArchiveReader(package))
                             {
-                                var identity = reader.GetIdentity();
+                                // Ensure that these calls do not throw to verify that the NuGet
+                                // client could also read this.
+                                reader.GetIdentity();
+                                reader.GetPackageDependencies().ToArray();
 
                                 log.LogMinimal($"valid : {package}");
                             }

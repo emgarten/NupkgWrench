@@ -68,7 +68,7 @@ namespace NupkgWrench
                     {
                         log.LogInformation($"adding {file}");
 
-                        var zipPath = file.Substring(inputFolder.Length);
+                        var zipPath = file.Substring(inputFolder.Length).Replace("\\", "/");
                         var entry = zip.CreateEntry(zipPath, CompressionLevel.Optimal);
 
                         using (var entryStream = entry.Open())

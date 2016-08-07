@@ -13,7 +13,7 @@ namespace NupkgWrench
         {
             var parentCommand = cmdApp.Command("nuspec", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
 
-            TransformCommand.Register(parentCommand, log);
+            EditCommand.Register(parentCommand, log);
             ShowCommand.Register(parentCommand, log);
         }
 

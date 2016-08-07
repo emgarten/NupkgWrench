@@ -10,7 +10,7 @@ using NuGet.Packaging;
 
 namespace NupkgWrench
 {
-    internal static class ListCommand
+    internal static class ListFilesCommand
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {

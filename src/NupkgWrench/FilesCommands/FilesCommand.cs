@@ -13,7 +13,7 @@ namespace NupkgWrench
         {
             var parentCommand = cmdApp.Command("files", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
 
-            ListCommand.Register(parentCommand, log);
+            ListFilesCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
+using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-
+using NuGet.Packaging;
 
 namespace NupkgWrench
 {
-    internal static class TransformCommand
+    internal static class EditCommand
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
@@ -21,6 +24,7 @@ namespace NupkgWrench
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
             var property = cmd.Option("-p|--property", "XML node name ex: Id, Version, Authors.", CommandOptionType.SingleValue);
+            var propertyValue = cmd.Option("-s|--value", "XML node value.", CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -31,7 +35,8 @@ namespace NupkgWrench
 
             var required = new List<CommandOption>()
             {
-                property
+                property,
+                propertyValue
             };
 
             cmd.OnExecute(() =>
@@ -54,11 +59,26 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var packages = Util.GetPackages(inputs);
+                    var packages = Util.GetPackages(inputs.ToArray());
 
                     foreach (var package in packages)
                     {
-                        // Run transform
+                        log.LogMinimal($"modifying {package}");
+
+                        // Get nuspec file path
+                        string nuspecPath = null;
+                        XDocument nuspecXml = null;
+                        using (var packageReader = new PackageArchiveReader(package))
+                        {
+                            nuspecPath = packageReader.GetNuspecFile();
+                            nuspecXml = XDocument.Load(packageReader.GetNuspec());
+                        }
+
+                        // Modify value
+                        Util.AddOrUpdateMetadataElement(nuspecXml, property.Value(), propertyValue.Value());
+
+                        // Update zip
+                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
                     }
 
                     return 0;

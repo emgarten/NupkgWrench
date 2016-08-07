@@ -38,7 +38,7 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var packages = Util.GetPackages(inputs);
+                    var packages = Util.GetPackages(inputs.ToArray());
 
                     foreach (var package in packages)
                     {

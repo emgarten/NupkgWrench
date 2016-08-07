@@ -1,17 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NupkgWrench
 {
     public static class Util
     {
-        public static void ApplyXSLT()
+        /// <summary>
+        /// Add or update a root level metadata entry in a nuspec file
+        /// </summary>
+        public static void AddOrUpdateMetadataElement(XDocument doc, string name, string value)
         {
-            throw new NotImplementedException();
+            var package = doc.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("package", StringComparison.OrdinalIgnoreCase));
+            var metadata = package?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("metadata", StringComparison.OrdinalIgnoreCase));
+
+            if (metadata == null)
+            {
+                throw new InvalidDataException("Invalid nuspec");
+            }
+
+            var added = false;
+
+            foreach (var node in metadata.Elements().Where(e => e.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray())
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    node.Remove();
+                }
+                else
+                {
+                    node.SetValue(value);
+                    added = true;
+                }
+            }
+
+            if (!added)
+            {
+                metadata.Add(new XElement(XName.Get(name.ToLowerInvariant(), metadata.GetDefaultNamespace().NamespaceName), value));
+            }
+        }
+
+        public static void AddOrReplaceZipEntry(string nupkgPath, string filePath, XDocument doc, ILogger log)
+        {
+            using (var stream = new MemoryStream())
+            {
+                doc.Save(stream);
+
+                AddOrReplaceZipEntry(nupkgPath, filePath, stream, log);
+            }
+        }
+
+        public static void AddOrReplaceZipEntry(string nupkgPath, string filePath, Stream stream, ILogger log)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+
+            // Get nuspec file entry
+            using (var nupkgStream = File.Open(nupkgPath, FileMode.Open, FileAccess.ReadWrite))
+            using (var zip = new ZipArchive(nupkgStream, ZipArchiveMode.Update))
+            {
+                var exists = zip.Entries.Any(e => e.FullName.Equals(filePath, StringComparison.OrdinalIgnoreCase));
+
+                ZipArchiveEntry entry = null;
+
+                if (exists)
+                {
+                    entry = zip.GetEntry(filePath);
+
+                    // Correct casing if needed
+                    filePath = entry.FullName;
+                    entry.Delete();
+                }
+
+                log.LogInformation($"{nupkgPath} : updating {filePath}");
+
+                entry = zip.CreateEntry(filePath, CompressionLevel.Optimal);
+                using (var entryStream = entry.Open())
+                {
+                    stream.CopyTo(entryStream);
+                }
+            }
         }
 
         /// <summary>
@@ -35,7 +108,7 @@ namespace NupkgWrench
         /// <summary>
         /// Convert inputs to a set of nupkg files.
         /// </summary>
-        public static SortedSet<string> GetPackages(List<string> inputs)
+        public static SortedSet<string> GetPackages(params string[] inputs)
         {
             var files = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -43,24 +116,22 @@ namespace NupkgWrench
             {
                 var inputFile = Path.GetFullPath(input);
 
-                if (File.Exists(inputFile))
-                {
-                    files.Add(inputFile);
-                }
-                else if (Directory.Exists(inputFile))
+                if (Directory.Exists(inputFile))
                 {
                     var directoryFiles = Directory.GetFiles(inputFile, "*.nupkg", SearchOption.AllDirectories).ToList();
 
-                    if (directoryFiles.Count < 1)
-                    {
-                        throw new FileNotFoundException($"Unable to find nupkgs in '{inputFile}'.");
-                    }
-
                     files.UnionWith(directoryFiles);
                 }
-                else
+                else if (inputFile.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new FileNotFoundException($"Unable to find '{inputFile}'.");
+                    if (File.Exists(inputFile))
+                    {
+                        files.Add(inputFile);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException($"Unable to find '{inputFile}'.");
+                    }
                 }
             }
 

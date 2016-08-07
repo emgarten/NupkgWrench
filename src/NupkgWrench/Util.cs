@@ -120,7 +120,7 @@ namespace NupkgWrench
                               .Replace(@"\?", ".");
 
             // Regex match, ignore case since package ids and versions are case insensitive
-            return Regex.IsMatch(input.ToLowerInvariant(), $"^{wildcardPattern}$".ToLowerInvariant());
+            return Regex.IsMatch(input.ToLowerInvariant(), $"^{regexPattern}$".ToLowerInvariant());
         }
 
         /// <summary>

@@ -60,7 +60,9 @@ namespace NupkgWrench
                     
                     foreach (var entry in zip.Entries)
                     {
-                        var path = Path.Combine(output.Value(), entry.FullName);
+                        var path = Path.Combine(output.Value(), entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                        var dir = Path.GetDirectoryName(path);
+                        Directory.CreateDirectory(dir);
 
                         log.LogInformation($"writing {path}");
 

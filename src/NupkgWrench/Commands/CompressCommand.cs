@@ -59,7 +59,7 @@ namespace NupkgWrench
                 var nupkgName = $"{identity.Id}.{identity.Version.ToString()}.nupkg";
                 var outputPath = Path.Combine(output.Value(), nupkgName);
 
-                log.LogMinimal($"packing {inputFolder} -> {outputPath}");
+                log.LogMinimal($"compressing {inputFolder} -> {outputPath}");
 
                 using (var stream = File.Create(outputPath))
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create))

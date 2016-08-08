@@ -19,7 +19,7 @@ namespace NupkgWrench
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Add empty dependency groups or replace existing ones with empty groups.";
+            cmd.Description = "Add empty dependency groups or remove dependencies from existing groups.";
 
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);

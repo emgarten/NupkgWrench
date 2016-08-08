@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -21,7 +19,7 @@ namespace NupkgWrench
         {
             cmd.Description = "Create a nupkg from a folder.";
             cmd.HelpOption(Constants.HelpOption);
-            var output = cmd.Option("-o|--output", "Output folder", CommandOptionType.SingleValue);
+            var output = cmd.Option("-o|--output", "Output folder, the nupkg will be added here.", CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -44,6 +42,7 @@ namespace NupkgWrench
                     }
                 }
 
+                // Normalize dir ending
                 var inputFolder = argRoot.Value.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
                 if (string.IsNullOrEmpty(inputFolder) || !Directory.Exists(inputFolder))

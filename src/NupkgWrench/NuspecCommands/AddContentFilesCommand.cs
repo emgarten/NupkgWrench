@@ -18,12 +18,12 @@ namespace NupkgWrench
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Modifies or adds a top level property to the nuspec in a package.";
+            cmd.Description = "Add a contentFiles entry in nuspec.";
 
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
             var include = cmd.Option("--include", "content files include attribute value.", CommandOptionType.SingleValue);
-            var exclude = cmd.Option("--exclude", "content files include attribute value.", CommandOptionType.SingleValue);
+            var exclude = cmd.Option("--exclude", "content files exclude attribute value.", CommandOptionType.SingleValue);
             var buildAction = cmd.Option("--build-action", "content files buildAction attribute value.", CommandOptionType.SingleValue);
             var copyToOutput = cmd.Option("--copy-to-output", "content files copyToOutput attribute value. (true|false)", CommandOptionType.SingleValue);
             var flatten = cmd.Option("--flatten", "content files flatten attribute value. (true|false)", CommandOptionType.SingleValue);

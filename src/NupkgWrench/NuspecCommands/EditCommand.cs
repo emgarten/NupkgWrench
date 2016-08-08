@@ -59,7 +59,7 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var packages = Util.GetPackages(inputs.ToArray());
+                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, inputs.ToArray());
 
                     foreach (var package in packages)
                     {

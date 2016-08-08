@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace NupkgWrench
 {

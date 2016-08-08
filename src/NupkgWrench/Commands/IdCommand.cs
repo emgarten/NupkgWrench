@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -32,7 +29,7 @@ namespace NupkgWrench
                 if (string.IsNullOrEmpty(nupkgPath))
                 {
                     throw new ArgumentException("Specify the path to a nupkg.");
-                 }
+                }
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {

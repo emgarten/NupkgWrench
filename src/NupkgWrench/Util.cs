@@ -4,17 +4,18 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 
 namespace NupkgWrench
 {
     public static class Util
     {
+        /// <summary>
+        /// Remove files from a zip
+        /// </summary>
         public static void RemoveFiles(ZipArchive zip, string pathWildcard, ILogger log)
         {
             var entries = zip.Entries.Where(e => IsMatch(e.FullName, pathWildcard)).ToList();
@@ -26,6 +27,9 @@ namespace NupkgWrench
             }
         }
 
+        /// <summary>
+        /// Fix slashes to match a zip entry.
+        /// </summary>
         public static string GetZipPath(string path)
         {
             return path.Replace("\\", "/").TrimStart('/');
@@ -43,23 +47,23 @@ namespace NupkgWrench
                 throw new InvalidDataException("Invalid nuspec");
             }
 
-            var added = false;
+            var doNotAdd = false;
 
             foreach (var node in metadata.Elements().Where(e => e.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray())
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     node.Remove();
-                    added = true;
+                    doNotAdd = true;
                 }
                 else
                 {
                     node.SetValue(value);
-                    added = true;
+                    doNotAdd = true;
                 }
             }
 
-            if (!added)
+            if (!doNotAdd)
             {
                 metadata.Add(new XElement(XName.Get(name.ToLowerInvariant(), metadata.GetDefaultNamespace().NamespaceName), value));
             }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;

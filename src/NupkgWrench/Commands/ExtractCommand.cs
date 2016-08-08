@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -21,7 +18,7 @@ namespace NupkgWrench
         {
             cmd.Description = "Extract a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
-            var output = cmd.Option("-o|--output", "Output folder", CommandOptionType.SingleValue);
+            var output = cmd.Option("-o|--output", "Output folder, all nupkg files will be placed in the root of this folder.", CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -57,7 +54,7 @@ namespace NupkgWrench
                 using (var zip = new ZipArchive(stream))
                 {
                     log.LogMinimal($"Extracting {nupkgPath} -> {output.Value()}");
-                    
+
                     foreach (var entry in zip.Entries)
                     {
                         var path = Path.Combine(output.Value(), entry.FullName.Replace('/', Path.DirectorySeparatorChar));

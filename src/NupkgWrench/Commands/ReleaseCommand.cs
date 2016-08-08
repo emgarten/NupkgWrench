@@ -20,7 +20,7 @@ namespace NupkgWrench
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Convert a set of pre-release packages to stable or the specified version/release label. Defaults to stable.";
+            cmd.Description = "Convert a set of pre-release packages to stable or the specified version/release label. Package dependencies will also be modified to match. Defaults to stable.";
 
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);

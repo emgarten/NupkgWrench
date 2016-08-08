@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -21,8 +17,8 @@ namespace NupkgWrench
         {
             cmd.Description = "Add a file to a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
-            var pathOption = cmd.Option("-p|--path", "Path to add file at, this must contain the file name also.", CommandOptionType.SingleValue);
-            var fileOption = cmd.Option("-f|--file", "Path to file that will be added to the nupkg.", CommandOptionType.SingleValue);
+            var pathOption = cmd.Option("-p|--path", "Path to add file at within the nupkg, this must contain the file name also.", CommandOptionType.SingleValue);
+            var fileOption = cmd.Option("-f|--file", "Path on disk to the file that will be added to the nupkg.", CommandOptionType.SingleValue);
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
 

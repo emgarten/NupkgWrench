@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -19,7 +16,7 @@ namespace NupkgWrench
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Add an empty folder _._ placeholder to a nupkg.";
+            cmd.Description = "Add an empty folder _._ placeholder to a nupkg, existing files in the folder will be removed.";
             var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
             var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
             cmd.HelpOption(Constants.HelpOption);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -593,12 +594,490 @@ namespace NupkgWrench.Tests
             }
         }
 
+        [Fact]
+        public async Task Command_AddFilesCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var inputFile = Path.Combine(workingDir.Root, "test.dll");
+                File.WriteAllText(inputFile, "a");
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", inputFile }, log);
+
+                var files = GetFiles(zipFile.FullName);
+
+                // Assert
+                Assert.True(0 == exitCode, string.Join("|", log.Messages));
+                Assert.Contains("lib/win8/test.dll", string.Join("|", files));
+            }
+        }
+
+        [Fact]
+        public async Task Command_AddFilesCommand_Twice()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var inputFile = Path.Combine(workingDir.Root, "test.dll");
+                File.WriteAllText(inputFile, "a");
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", inputFile }, log);
+                exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", inputFile }, log);
+
+                var files = GetFiles(zipFile.FullName);
+
+                // Assert
+                Assert.True(0 == exitCode, string.Join("|", log.Messages));
+                Assert.Contains("lib/win8/test.dll", string.Join("|", files));
+                Assert.Contains("removing", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_AddFilesCommand_Remove()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var inputFile = Path.Combine(workingDir.Root, "test.dll");
+                File.WriteAllText(inputFile, "a");
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", inputFile }, log);
+                exitCode = await Program.MainCore(new[] { "files", "remove", zipFile.FullName, "-p", "lib/win8/test.dll" }, log);
+
+                var files = GetFiles(zipFile.FullName);
+
+                // Assert
+                Assert.True(0 == exitCode, string.Join("|", log.Messages));
+                Assert.DoesNotContain("lib/win8/test.dll", string.Join("|", files));
+                Assert.Contains("removing", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_ListFilesCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var inputFile = Path.Combine(workingDir.Root, "test.dll");
+                File.WriteAllText(inputFile, "a");
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", inputFile }, log);
+                exitCode = await Program.MainCore(new[] { "files", "list", zipFile.FullName }, log);
+
+                var files = GetFiles(zipFile.FullName);
+
+                // Assert
+                Assert.True(0 == exitCode, string.Join("|", log.Messages));
+
+                foreach (var file in files)
+                {
+                    Assert.Contains(file, string.Join("|", log.Messages));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Command_ContentFilesCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "contentfiles", "add", zipFile.FullName, "--include", "**/*.*", "--exclude", "**/*.txt", "--build-action", "none", "--copy-to-output", "true", "--flatten", "true" }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal("none", nuspec.GetContentFiles().Single().BuildAction);
+                Assert.Equal(true, nuspec.GetContentFiles().Single().CopyToOutput);
+                Assert.Equal("**/*.txt", nuspec.GetContentFiles().Single().Exclude);
+                Assert.Equal("**/*.*", nuspec.GetContentFiles().Single().Include);
+                Assert.Equal(true, nuspec.GetContentFiles().Single().Flatten);
+            }
+        }
+
+        [Fact]
+        public async Task Command_ContentFilesCommand_Multiple()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "contentfiles", "add", zipFile.FullName, "--include", "**/*.*" }, log);
+                exitCode = await Program.MainCore(new[] { "nuspec", "contentfiles", "add", zipFile.FullName, "--include", "**/*.txt" }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(2, nuspec.GetContentFiles().Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_DependenciesClearCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("netstandard1.6"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                testPackage.Nuspec.Dependencies.Add(depGroup1);
+                testPackage.Nuspec.Dependencies.Add(depGroup2);
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "clear", zipFile.FullName }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(0, nuspec.GetDependencyGroups().Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_DependenciesClearCommand_Filter()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("netstandard1.6"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                testPackage.Nuspec.Dependencies.Add(depGroup1);
+                testPackage.Nuspec.Dependencies.Add(depGroup2);
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "clear", zipFile.FullName, "-f", "net45" }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(1, nuspec.GetDependencyGroups().Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_DependenciesEmptyGroupCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("netstandard1.6"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                testPackage.Nuspec.Dependencies.Add(depGroup1);
+                testPackage.Nuspec.Dependencies.Add(depGroup2);
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", zipFile.FullName, "-f", "net45" }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(2, nuspec.GetDependencyGroups().Count());
+                Assert.Equal(0, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net45"))).Single().Packages.Count());
+                Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))).Single().Packages.Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_DependenciesEmptyGroupCommand_AddNew()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("netstandard1.6"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                testPackage.Nuspec.Dependencies.Add(depGroup1);
+                testPackage.Nuspec.Dependencies.Add(depGroup2);
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", zipFile.FullName, "-f", "win8" }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(3, nuspec.GetDependencyGroups().Count());
+                Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net45"))).Single().Packages.Count());
+                Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))).Single().Packages.Count());
+                Assert.Equal(0, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("win8"))).Single().Packages.Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_FrameworkAssembliesClear()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                testPackage.Nuspec.FrameworkAssemblies.Add(new KeyValuePair<string, List<NuGetFramework>>("test", new List<NuGetFramework>() { NuGetFramework.Parse("net45") }));
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "frameworkassemblies", "clear", zipFile.FullName }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(0, nuspec.GetFrameworkReferenceGroups().Count());
+            }
+        }
+
+        [Fact]
+        public async Task Command_NuspecShowCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "show", zipFile.FullName }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains("<version>1.0.0</version>", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_NuspecEditCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "edit", zipFile.FullName, "-p", "version", "-s", "2.0.0-beta" }, log);
+                exitCode += await Program.MainCore(new[] { "nuspec", "show", zipFile.FullName }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains("<version>2.0.0-beta</version>", string.Join("|", log.Messages));
+            }
+        }
+
         private static NuspecReader GetNuspec(string path)
         {
             using (var reader = new PackageArchiveReader(path))
             {
                 return reader.NuspecReader;
             }
+        }
+
+        private static SortedSet<string> GetFiles(string path)
+        {
+            var files = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            using (var stream = File.OpenRead(path))
+            using (var zip = new ZipArchive(stream))
+            {
+                files.AddRange(zip.Entries.Select(e => e.FullName));
+            }
+
+            return files;
         }
     }
 }

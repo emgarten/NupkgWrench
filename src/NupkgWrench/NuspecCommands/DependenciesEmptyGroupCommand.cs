@@ -129,7 +129,7 @@ namespace NupkgWrench
 
                             if (frameworks.Remove(groupFramework))
                             {
-                                foreach (var child in node.Elements())
+                                foreach (var child in node.Elements().ToArray())
                                 {
                                     child.Remove();
                                 }

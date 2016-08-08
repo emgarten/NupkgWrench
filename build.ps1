@@ -17,8 +17,9 @@ Install-PackagesConfig $RepoRoot
 
 $ArtifactsDir = Join-Path $RepoRoot 'artifacts'
 $nugetExe = Join-Path $RepoRoot '.nuget\nuget.exe'
-$ILMergeExe = Join-Path $RepoRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
+$ILMergeExe = Join-Path $RepoRoot 'packages\ILRepack.2.0.10\tools\ILRepack.exe'
 $dotnetExe = Get-DotnetCLIExe $RepoRoot
+$nupkgWrenchExe = Join-Path $ArtifactsDir 'nupkgwrench.exe'
 
 # Clear artifacts
 Remove-Item -Recurse -Force $ArtifactsDir | Out-Null
@@ -27,22 +28,13 @@ Remove-Item -Recurse -Force $ArtifactsDir | Out-Null
 & $nugetExe restore $RepoRoot
 
 # Run tests
-& $dotnetExe test (Join-Path $RepoRoot "test\NupkgWrench.Test")
+& $dotnetExe test (Join-Path $RepoRoot "test\NupkgWrench.Tests")
 
 if (-not $?)
 {
     Write-Host "tests failed!!!"
     exit 1
 }
-
-& $dotnetExe test (Join-Path $RepoRoot "test\NupkgWrench.Integration.Test")
-
-if (-not $?)
-{
-    Write-Host "tests failed!!!"
-    exit 1
-}
-
 
 # Publish for ILMerge
 & $dotnetExe publish src\NupkgWrench -o artifacts\publish\net451 -f net451 -r win7-x86 --configuration release
@@ -71,5 +63,24 @@ if (-not $?)
     Write-Host "Pack failed!"
     exit 1
 }
+
+# use the build to modify the nupkg
+& $nupkgWrenchExe files emptyfolder artifacts -p lib/net451
+& $nupkgWrenchExe nuspec frameworkassemblies clear artifacts
+& $nupkgWrenchExe nuspec dependencies emptygroup artifacts -f net451
+
+# Create xplat tar
+& $dotnetExe publish src\NupkgWrench -o artifacts\publish\NupkgWrench -f netcoreapp1.0 --configuration release
+
+pushd "artifacts\publish"
+
+# clean up pdbs
+rm nupkgwrench\*.pdb
+
+# bzip the portable netcore app folder
+& "$RepoRoot\packages\7ZipCLI.9.20.0\tools\7za.exe" "a" "NupkgWrench.tar" "NupkgWrench"
+& "$RepoRoot\packages\7ZipCLI.9.20.0\tools\7za.exe" "a" "..\NupkgWrench.tar.bz2" "NupkgWrench.tar"
+
+popd
 
 Write-Host "Success!"

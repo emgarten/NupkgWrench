@@ -53,9 +53,7 @@
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0"
-        },
-        "System.Runtime.Serialization.Primitives": "4.1.1",
-        "System.Xml.XmlSerializer": "4.0.11"
+        }
       }
     }
   }

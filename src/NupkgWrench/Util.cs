@@ -50,6 +50,7 @@ namespace NupkgWrench
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     node.Remove();
+                    added = true;
                 }
                 else
                 {

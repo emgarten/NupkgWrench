@@ -18,6 +18,10 @@ namespace NupkgWrench
         {
             cmd.Description = "Verify a nupkg can be read using NuGet's package reader.";
 
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+
             var argRoot = cmd.Argument(
                 "[root]",
                 "Paths to individual packages or directories containing packages.",
@@ -36,7 +40,7 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var packages = Util.GetPackages(inputs.ToArray());
+                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
                     var exitCode = 0;
 
                     foreach (var package in packages)

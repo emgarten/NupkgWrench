@@ -21,8 +21,9 @@ namespace NupkgWrench
         {
             cmd.Description = "Clear all dependencies or a set of target framework group dependencies.";
 
-            var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
             var frameworkOption = cmd.Option("-f|--framework", "Group target frameworks. Use 'any' for the default group. If not specified all dependencies are removed.", CommandOptionType.MultipleValue);
 
             var argRoot = cmd.Argument(
@@ -57,7 +58,7 @@ namespace NupkgWrench
                         }
                     }
 
-                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, inputs.ToArray());
+                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
 
                     foreach (var package in packages)
                     {

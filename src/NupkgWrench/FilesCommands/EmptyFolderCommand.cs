@@ -17,8 +17,9 @@ namespace NupkgWrench
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
             cmd.Description = "Add an empty folder _._ placeholder to a nupkg, existing files in the folder will be removed.";
-            var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
             cmd.HelpOption(Constants.HelpOption);
             var pathOption = cmd.Option("-p|--path", "Path within the nupkg to add an _._ file.", CommandOptionType.MultipleValue);
 
@@ -42,7 +43,7 @@ namespace NupkgWrench
                 }
 
                 // Gather all package data
-                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, inputs.ToArray());
+                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
 
                 // Validate parameters
                 foreach (var requiredOption in required)

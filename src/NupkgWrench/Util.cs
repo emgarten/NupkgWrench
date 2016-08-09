@@ -149,49 +149,55 @@ namespace NupkgWrench
         /// <summary>
         /// Filter packages
         /// </summary>
-        public static IEnumerable<string> GetPackagesWithFilter(CommandOption idFilter, CommandOption versionFilter, string[] inputs)
+        public static IEnumerable<string> GetPackagesWithFilter(CommandOption idFilter, CommandOption versionFilter, CommandOption excludeSymbols, string[] inputs)
         {
             return GetPackagesWithFilter(idFilter.HasValue() ? idFilter.Value() : null,
                 versionFilter.HasValue() ? versionFilter.Value() : null,
+                excludeSymbols.HasValue() ? true : false,
                 inputs);
         }
 
         /// <summary>
         /// Filter packages
         /// </summary>
-        public static IEnumerable<string> GetPackagesWithFilter(string idFilter, string versionFilter, string[] inputs)
+        public static SortedSet<string> GetPackagesWithFilter(string idFilter, string versionFilter, bool excludeSymbols, string[] inputs)
         {
-            foreach (var path in GetPackages(inputs))
-            {
-                if (string.IsNullOrEmpty(idFilter) && string.IsNullOrEmpty(versionFilter))
-                {
-                    yield return path;
-                }
-                else
-                {
-                    using (var reader = new PackageArchiveReader(path))
-                    {
-                        var identity = reader.GetIdentity();
+            var files = GetPackages(inputs);
 
-                        // Check all forms of the version
-                        if (IsMatch(identity.Id, idFilter)
-                            && (IsMatch(identity.Version.ToString(), versionFilter)
-                            || IsMatch(identity.Version.ToNormalizedString(), versionFilter)
-                            || IsMatch(identity.Version.ToFullString(), versionFilter)))
-                        {
-                            yield return path;
-                        }
-                    }
+            if (!string.IsNullOrEmpty(idFilter) || !string.IsNullOrEmpty(versionFilter) || excludeSymbols)
+            {
+                files.RemoveWhere(path => !IsFilterMatch(idFilter, versionFilter, excludeSymbols, path));
+            }
+
+            return files;
+        }
+
+        private static bool IsFilterMatch(string idFilter, string versionFilter, bool excludeSymbols, string path)
+        {
+            using (var reader = new PackageArchiveReader(path))
+            {
+                var identity = reader.GetIdentity();
+
+                // Check all forms of the version
+                if (IsMatch(identity.Id, idFilter)
+                    && (IsMatch(identity.Version.ToString(), versionFilter)
+                    || IsMatch(identity.Version.ToNormalizedString(), versionFilter)
+                    || IsMatch(identity.Version.ToFullString(), versionFilter))
+                    && (!excludeSymbols || !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
         /// Convert inputs to a set of nupkg files.
         /// </summary>
-        public static SortedSet<string> GetPackages(params string[] inputs)
+        private static SortedSet<string> GetPackages(params string[] inputs)
         {
-            var files = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            var files = new SortedSet<string>(StringComparer.Ordinal);
 
             foreach (var input in inputs)
             {

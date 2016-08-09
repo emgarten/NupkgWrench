@@ -19,47 +19,56 @@ namespace NupkgWrench
             cmd.Description = "Update the file name of a package to match the id and version in the nuspec.";
             cmd.HelpOption(Constants.HelpOption);
 
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+
             var argRoot = cmd.Argument(
                 "[root]",
                 "Nupkg path",
-                multipleValues: false);
+                multipleValues: true);
 
             cmd.OnExecute(() =>
             {
-                var nupkgPath = argRoot.Value;
+                var inputs = argRoot.Values;
 
-                if (string.IsNullOrEmpty(nupkgPath))
+                if (inputs.Count < 1)
                 {
-                    throw new ArgumentException("Specify the path to a nupkg.");
+                    inputs.Add(Directory.GetCurrentDirectory());
                 }
 
-                PackageIdentity identity = null;
+                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
+                foreach (var nupkgPath in packages)
                 {
-                    identity = reader.GetIdentity();
-                }
+                    PackageIdentity identity = null;
 
-                var expectedName = $"{identity.Id}.{identity.Version.ToString()}.nupkg";
-                var currentName = Path.GetFileName(nupkgPath);
-
-                var dir = Path.GetDirectoryName(nupkgPath);
-                var expectedPath = Path.Combine(dir, expectedName);
-
-                if (StringComparer.Ordinal.Equals(expectedName, currentName))
-                {
-                    log.LogMinimal($"{nupkgPath} : no changes");
-                }
-                else
-                {
-                    if (File.Exists(expectedPath))
+                    using (var reader = new PackageArchiveReader(nupkgPath))
                     {
-                        log.LogMinimal($"removing : {expectedPath}");
-                        File.Delete(expectedPath);
+                        identity = reader.GetIdentity();
                     }
 
-                    log.LogMinimal($"{nupkgPath} : -> {expectedName}");
-                    File.Move(nupkgPath, expectedPath);
+                    var expectedName = $"{identity.Id}.{identity.Version.ToString()}.nupkg";
+                    var currentName = Path.GetFileName(nupkgPath);
+
+                    var dir = Path.GetDirectoryName(nupkgPath);
+                    var expectedPath = Path.Combine(dir, expectedName);
+
+                    if (StringComparer.Ordinal.Equals(expectedName, currentName))
+                    {
+                        log.LogMinimal($"{nupkgPath} : no changes");
+                    }
+                    else
+                    {
+                        if (File.Exists(expectedPath))
+                        {
+                            log.LogMinimal($"removing : {expectedPath}");
+                            File.Delete(expectedPath);
+                        }
+
+                        log.LogMinimal($"{nupkgPath} : -> {expectedName}");
+                        File.Move(nupkgPath, expectedPath);
+                    }
                 }
 
                 return 0;

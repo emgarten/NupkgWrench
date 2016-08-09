@@ -19,8 +19,9 @@ namespace NupkgWrench
             cmd.Description = "Remove files from a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
             var pathOption = cmd.Option("-p|--path", "Paths to remove. These may include wildcards.", CommandOptionType.MultipleValue);
-            var idFilter = cmd.Option("-i|--id", "Filter to only packages matching the id or wildcard.", CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option("-v|--version", "Filter to only packages matching the version or wildcard.", CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -42,7 +43,7 @@ namespace NupkgWrench
                 }
 
                 // Gather all package data
-                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, inputs.ToArray());
+                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
 
                 // Validate parameters
                 foreach (var requiredOption in required)

@@ -108,7 +108,7 @@ c:\nupkgs3\packageA.1.0.0.nupkg
 Converting a package from a pre-release version to a stable version, or just changing the version to another version completely can be a tedious task. NupkgWrench automates this by first updating the version of each package passed in, then updating all dependency version ranges that contained the previous versions. 
 
 ```
-> NupkgWrench release c:\nupkgs c:\nupkgs2 --label 
+> NupkgWrench release c:\nupkgs c:\nupkgs2
 processing c:\nupkgs\packageA.2.0.0-beta.nupkg
 packageA.2.0.0-beta -> packageA.2.0.0
 dependency packageB [1.0.0-beta, ) -> [1.0.0, )

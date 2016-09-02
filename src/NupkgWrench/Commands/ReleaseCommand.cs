@@ -140,7 +140,7 @@ namespace NupkgWrench
                             // Check if this is a package that has been updated
                             if (updatedIds.Contains(depId))
                             {
-                                // Look up the package this refers to 
+                                // Look up the package this refers to
                                 var depPackageEntry = packageSet.First(e => e.Item2.Id.Equals(depId, StringComparison.OrdinalIgnoreCase));
 
                                 // Get version replacement
@@ -158,7 +158,8 @@ namespace NupkgWrench
                                     var maxVersion = range.MaxVersion;
                                     var changed = false;
 
-                                    if (VersionComparer.VersionRelease.Equals(oldVersion, minVersion))
+                                    if (VersionComparer.VersionRelease.Equals(oldVersion, minVersion)
+                                        || (VersionComparer.VersionRelease.Compare(oldVersion, minVersion) > 0 && range.Satisfies(oldVersion)))
                                     {
                                         minVersion = updatedVersion;
                                         changed = true;

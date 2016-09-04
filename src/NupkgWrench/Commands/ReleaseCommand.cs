@@ -76,6 +76,7 @@ namespace NupkgWrench
 
                     var packageSet = new List<Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>>();
                     var updatedIds = new HashSet<string>();
+                    var fileNameUpdates = new Dictionary<string, string>(StringComparer.Ordinal);
 
                     foreach (var package in packages)
                     {
@@ -112,8 +113,25 @@ namespace NupkgWrench
                             packageSet.Add(new Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>(package, identity, nuspecPath, nuspecXml, newIdentity));
 
                             updatedIds.Add(identity.Id);
+
+                            // Determine the new file name
+                            var newFileName = $"{newIdentity.Id}.{newIdentity.Version.ToString()}.nupkg";
+
+                            if (package.EndsWith(".symbols.nupkg"))
+                            {
+                                newFileName = $"{newIdentity.Id}.{newIdentity.Version.ToString()}.symbols.nupkg";
+                            }
+
+                            var rootDir = Path.GetDirectoryName(package);
+                            var newFullPath = Path.Combine(rootDir, newFileName);
+
+                            // Old path -> New path
+                            fileNameUpdates.Add(package, newFullPath);
                         }
                     }
+
+                    // Verify there are no collisions
+                    VerifyNoConflicts(fileNameUpdates);
 
                     // Update dependency info
                     foreach (var package in packageSet)
@@ -140,13 +158,6 @@ namespace NupkgWrench
                             // Check if this is a package that has been updated
                             if (updatedIds.Contains(depId))
                             {
-                                // Look up the package this refers to
-                                var depPackageEntry = packageSet.First(e => e.Item2.Id.Equals(depId, StringComparison.OrdinalIgnoreCase));
-
-                                // Get version replacement
-                                var oldVersion = depPackageEntry.Item2.Version;
-                                var updatedVersion = depPackageEntry.Item5.Version;
-
                                 var rangeAttribute = dependency.Attributes().FirstOrDefault(e => e.Name.LocalName.Equals("version", StringComparison.OrdinalIgnoreCase));
 
                                 // Modify the range if needed
@@ -161,6 +172,22 @@ namespace NupkgWrench
                                         log.LogWarning($"dependency range is invalid: {depId} {rangeAttribute.Value}. Skipping.");
                                         continue;
                                     }
+
+                                    // Look up the package this refers to
+                                    // If there are multiple packages of the same id apply the update 
+                                    // for the lowest version, favoring one with an original version 
+                                    // that matched the original range.
+                                    // Ordering by the original version is used just as a tie breaker
+                                    var depPackageEntry = packageSet
+                                        .Where(e => e.Item2.Id.Equals(depId, StringComparison.OrdinalIgnoreCase))
+                                        .OrderBy(e => range.Satisfies(e.Item2.Version) ? 0 : 1)
+                                        .ThenBy(e => e.Item5.Version)
+                                        .ThenBy(e => e.Item2.Version)
+                                        .First();
+
+                                    // Get version replacement
+                                    var oldVersion = depPackageEntry.Item2.Version;
+                                    var updatedVersion = depPackageEntry.Item5.Version;
 
                                     // Verify the original package version was part of the original range.
                                     if (!range.Satisfies(oldVersion))
@@ -241,15 +268,8 @@ namespace NupkgWrench
                         // Update the nuspec file in the zip
                         Util.AddOrReplaceZipEntry(package.Item1, package.Item3, nuspec, log);
 
-                        var newFileName = $"{package.Item5.Id}.{package.Item5.Version.ToString()}.nupkg";
-
-                        if (package.Item1.EndsWith(".symbols.nupkg"))
-                        {
-                            newFileName = $"{package.Item5.Id}.{package.Item5.Version.ToString()}.symbols.nupkg";
-                        }
-
                         // Move the file
-                        var newPath = Path.Combine(Path.GetDirectoryName(package.Item1), newFileName);
+                        var newPath = fileNameUpdates[package.Item1];
                         if (!newPath.Equals(package.Item1, StringComparison.Ordinal))
                         {
                             log.LogMinimal($"{package.Item1} -> {newPath}");
@@ -267,6 +287,31 @@ namespace NupkgWrench
 
                 return 1;
             });
+        }
+
+        private static void VerifyNoConflicts(Dictionary<string, string> fileNameUpdates)
+        {
+            var conflicts = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+            foreach (var pair in fileNameUpdates)
+            {
+                HashSet<string> matches;
+                if (!conflicts.TryGetValue(pair.Value, out matches))
+                {
+                    matches = new HashSet<string>(StringComparer.Ordinal);
+                    conflicts.Add(pair.Value, matches);
+                }
+
+                matches.Add(pair.Key);
+            }
+
+            foreach (var pair in conflicts)
+            {
+                if (pair.Value.Count > 1)
+                {
+                    throw new InvalidOperationException($"Output file name collision on {pair.Key}. Inputs: {string.Join(", ", pair.Value)}");
+                }
+            }
         }
     }
 }

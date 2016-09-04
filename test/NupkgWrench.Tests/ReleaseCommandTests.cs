@@ -12,6 +12,157 @@ namespace NupkgWrench.Tests
     public class ReleaseCommandTests
     {
         [Fact]
+        public async Task Command_ReleaseCommand_MultipleNewVersions_EachTFMTakesCorrectVersion()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("1.0.0"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("net46"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0"))
+                });
+
+                testPackageA.Nuspec.Dependencies.Add(depGroup1);
+                testPackageA.Nuspec.Dependencies.Add(depGroup2);
+
+                var testPackageB1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var testPackageB2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "2.0.0"
+                    }
+                };
+
+                var testPackageB3 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "0.1.0"
+                    }
+                };
+
+                var testPackageB4 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "9.0.0"
+                    }
+                };
+
+                var zipFileA = testPackageA.Create(workingDir.Root);
+                var zipFileB1 = testPackageB1.Create(workingDir.Root);
+                var zipFileB2 = testPackageB2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "release", workingDir.Root, "-r", "beta" }, log);
+
+                var nuspecA = GetNuspec(Path.Combine(workingDir.Root, "a.1.0.0-beta.nupkg"));
+                var dependencyBNet45 = nuspecA.GetDependencyGroups().Single(e => e.TargetFramework == NuGetFramework.Parse("net45")).Packages.Single(e => e.Id == "b");
+                var dependencyBNet46 = nuspecA.GetDependencyGroups().Single(e => e.TargetFramework == NuGetFramework.Parse("net46")).Packages.Single(e => e.Id == "b");
+
+                // Assert
+                Assert.Equal(0, exitCode);
+
+                Assert.Equal("1.0.0-beta", dependencyBNet45.VersionRange.ToLegacyShortString());
+                Assert.Equal("2.0.0-beta", dependencyBNet46.VersionRange.ToLegacyShortString());
+            }
+        }
+
+        [Fact]
+        public async Task Command_ReleaseCommand_MultipleNewVersions_TakeLowestValid()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "6.0.0"
+                    }
+                };
+
+                var depGroup = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("5.0.0"))
+                });
+
+                testPackageA.Nuspec.Dependencies.Add(depGroup);
+
+                var testPackageB1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "6.0.0"
+                    }
+                };
+
+                var testPackageB2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "7.0.0"
+                    }
+                };
+
+                var testPackageB3 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFileA = testPackageA.Create(workingDir.Root);
+                var zipFileB1 = testPackageB1.Create(workingDir.Root);
+                var zipFileB2 = testPackageB2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "release", workingDir.Root, "-r", "beta" }, log);
+
+                var nuspecA = GetNuspec(Path.Combine(workingDir.Root, "a.6.0.0-beta.nupkg"));
+                var dependencyB = nuspecA.GetDependencyGroups().Single().Packages.Single(e => e.Id == "b");
+                var dependencyBString = dependencyB.VersionRange.ToLegacyShortString();
+
+                // Assert
+                Assert.Equal(0, exitCode);
+
+                Assert.Equal("6.0.0-beta", dependencyBString);
+            }
+        }
+
+        [Fact]
         public async Task Command_ReleaseCommand_NewMinVersionNonInclusive_SwitchesMode()
         {
             using (var workingDir = new TestFolder())
@@ -594,6 +745,79 @@ namespace NupkgWrench.Tests
 
                 Assert.Equal("2.0.0-rc.1", nuspecA.GetDependencyGroups().Single().Packages.Single(e => e.Id == "b").VersionRange.ToLegacyShortString());
                 Assert.Equal("[1.0.0-rc.1]", nuspecA.GetDependencyGroups().Single().Packages.Single(e => e.Id == "c").VersionRange.ToLegacyShortString());
+            }
+        }
+
+        [Fact]
+        public async Task Command_ReleaseCommand_CollisionOnNewVersion()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var testPackageA2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "2.0.0"
+                    }
+                };
+
+                var zipFileA1 = testPackageA1.Create(workingDir.Root);
+                var zipFileA2 = testPackageA2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "release", workingDir.Root, "-n", "3.0.0" }, log);
+
+                // Assert
+                Assert.Equal(1, exitCode);
+                Assert.Contains("Output file name collision on", log.GetMessages());
+            }
+        }
+
+        [Fact]
+        public async Task Command_ReleaseCommand_NoCollisionOnNewVersionWhenSymbols()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFileA1 = testPackageA1.Create(workingDir.Root);
+
+                var symbolsPath = zipFileA1.FullName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(zipFileA1.FullName, symbolsPath);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "release", workingDir.Root, "-n", "3.0.0" }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                var nuspecA1 = GetNuspec(Path.Combine(workingDir.Root, "a.3.0.0.nupkg"));
+                var nuspecA2 = GetNuspec(Path.Combine(workingDir.Root, "a.3.0.0.symbols.nupkg"));
+
+                Assert.Equal("3.0.0", nuspecA1.GetVersion().ToNormalizedString());
+                Assert.Equal("3.0.0", nuspecA2.GetVersion().ToNormalizedString());
             }
         }
 

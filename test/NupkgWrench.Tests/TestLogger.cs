@@ -64,5 +64,10 @@ namespace NupkgWrench.Tests
 
             return sb.ToString();
         }
+
+        public string GetMessages()
+        {
+            return string.Join("|", Messages);
+        }
     }
 }

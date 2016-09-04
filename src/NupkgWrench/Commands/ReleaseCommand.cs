@@ -154,26 +154,81 @@ namespace NupkgWrench
                                 {
                                     var range = VersionRange.Parse(rangeAttribute.Value);
 
+                                    // Verify the original range is valid.
+                                    if (range.HasLowerAndUpperBounds
+                                        && VersionComparer.VersionRelease.Compare(range.MinVersion, range.MaxVersion) > 0)
+                                    {
+                                        log.LogWarning($"dependency range is invalid: {depId} {rangeAttribute.Value}. Skipping.");
+                                        continue;
+                                    }
+
+                                    // Verify the original package version was part of the original range.
+                                    if (!range.Satisfies(oldVersion))
+                                    {
+                                        log.LogWarning($"dependency {depId} does not allow the original version of {depId} {oldVersion.ToNormalizedString()}. Skipping.");
+                                        continue;
+                                    }
+
                                     var minVersion = range.MinVersion;
                                     var maxVersion = range.MaxVersion;
+                                    var includeMin = range.IsMinInclusive;
+                                    var includeMax = range.IsMaxInclusive;
                                     var changed = false;
 
-                                    if (VersionComparer.VersionRelease.Equals(oldVersion, minVersion)
-                                        || (VersionComparer.VersionRelease.Compare(oldVersion, minVersion) > 0 && range.Satisfies(oldVersion)))
+                                    // Always update the min version if the range includes one
+                                    if (minVersion != null
+                                        && (!VersionComparer.VersionRelease.Equals(updatedVersion, minVersion)
+                                            || !includeMin))
                                     {
                                         minVersion = updatedVersion;
+                                        includeMin = true;
                                         changed = true;
                                     }
 
-                                    if (VersionComparer.VersionRelease.Equals(oldVersion, maxVersion))
+                                    // Update the max if the original max matches the original version,
+                                    // or if the new version is above the old max.
+                                    if (maxVersion != null
+                                        && (VersionComparer.VersionRelease.Compare(oldVersion, maxVersion) == 0
+                                            || VersionComparer.VersionRelease.Compare(updatedVersion, maxVersion) >= 0))
                                     {
                                         maxVersion = updatedVersion;
+                                        includeMax = true;
                                         changed = true;
                                     }
 
                                     if (changed)
                                     {
-                                        var updatedRange = new VersionRange(minVersion, range.IsMinInclusive, maxVersion, range.IsMaxInclusive);
+                                        // Create new range
+                                        var updatedRange = new VersionRange(
+                                                minVersion: minVersion,
+                                                includeMinVersion: includeMin,
+                                                maxVersion: maxVersion,
+                                                includeMaxVersion: includeMax);
+
+                                        // Verify the new version is allowed by the new range.
+                                        if (!updatedRange.Satisfies(updatedVersion))
+                                        {
+                                            if (range.HasUpperBound)
+                                            {
+                                                // Lock to only the new version
+                                                minVersion = updatedVersion;
+                                                maxVersion = updatedVersion;
+                                                includeMin = true;
+                                                includeMax = true;
+
+                                                log.LogWarning($"Locking dependency range for {depId} to = {minVersion.ToNormalizedString()}.");
+                                            }
+                                            else
+                                            {
+                                                // If there was no max, update to >= updatedVersion
+                                                minVersion = updatedVersion;
+                                                maxVersion = null;
+                                                includeMin = true;
+                                                includeMax = false;
+
+                                                log.LogWarning($"Resetting dependency range for {depId} to >= {minVersion.ToNormalizedString()}.");
+                                            }
+                                        }
 
                                         rangeAttribute.SetValue(updatedRange.ToLegacyShortString());
 

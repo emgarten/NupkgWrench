@@ -9,7 +9,6 @@ namespace NupkgWrench.Tests
     {
         public TestPackageContext()
         {
-
         }
 
         public TestPackageContext(string id, string version)

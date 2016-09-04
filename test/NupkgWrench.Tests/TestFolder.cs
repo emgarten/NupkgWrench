@@ -30,7 +30,6 @@ namespace NupkgWrench.Tests
             }
             catch
             {
-
             }
         }
     }

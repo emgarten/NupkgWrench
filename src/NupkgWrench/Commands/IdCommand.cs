@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;

@@ -175,8 +175,8 @@ namespace NupkgWrench
                                     }
 
                                     // Look up the package this refers to
-                                    // If there are multiple packages of the same id apply the update 
-                                    // for the lowest version, favoring one with an original version 
+                                    // If there are multiple packages of the same id apply the update
+                                    // for the lowest version, favoring one with an original version
                                     // that matched the original range.
                                     // Ordering by the original version is used just as a tie breaker
                                     var depPackageEntry = packageSet

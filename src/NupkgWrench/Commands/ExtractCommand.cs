@@ -27,7 +27,7 @@ namespace NupkgWrench
 
             var argRoot = cmd.Argument(
                 "[root]",
-                "Path to an individual package or directory containing a single package.",
+                Constants.SinglePackageRootDesc,
                 multipleValues: true);
 
             var required = new List<CommandOption>()

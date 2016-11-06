@@ -16,7 +16,7 @@
         internal const string HighestVersionFilterTemplate = "--highest-version";
         internal const string HighestVersionFilterDesc = "Filter to only the highest version for a package id.";
 
-        internal const string FirstMatchFilterTemplate = "--first-match";
-        internal const string FirstMatchFilterDesc = "Apply the action only to the first match found.";
+        internal const string SinglePackageRootDesc = "Path to an individual package or directory containing a single package.";
+        internal const string MultiplePackagesRootDesc = "Paths to individual packages or directories containing packages.";
     }
 }

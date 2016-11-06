@@ -26,7 +26,7 @@ namespace NupkgWrench
 
             var argRoot = cmd.Argument(
                 "[root]",
-                "Paths to individual packages or directories containing packages.",
+                Constants.MultiplePackagesRootDesc,
                 multipleValues: true);
 
             cmd.OnExecute(() =>

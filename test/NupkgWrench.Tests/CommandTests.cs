@@ -71,6 +71,127 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_VersionCommand_MatchOnDirectory()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var zipFile = testPackage.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal("1.0.0-beta.1.2", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_VersionCommand_HighestFilter()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var testPackage2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.2.2"
+                    }
+                };
+
+                testPackage1.Create(workingDir.Root);
+                testPackage2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root, "--highest-version" }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal("1.0.0-beta.2.2", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_VersionCommand_FailsWhenMultipleMatch()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var testPackage2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.2.2"
+                    }
+                };
+
+                testPackage1.Create(workingDir.Root);
+                testPackage2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root }, log);
+
+                // Assert
+                Assert.Equal(1, exitCode);
+                Assert.Contains("The input filters given match multiple nupkgs", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_VersionCommand_FailsWhenZeroMatch()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root }, log);
+
+                // Assert
+                Assert.Equal(1, exitCode);
+                Assert.Contains("The input filters given match zero nupkgs", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
         public async Task Command_ListCommandNoFilters()
         {
             using (var workingDir = new TestFolder())

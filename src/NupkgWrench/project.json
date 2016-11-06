@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.3-*",
+  "version": "1.1.0-*",
   "description": "NupkgWrench is a cross platform command line tool to read and modify nupkgs.",
   "authors": [ "emgarten" ],
   "packOptions": {
@@ -27,7 +27,8 @@
 
   "dependencies": {
     "NuGet.Packaging": "3.5.0",
-    "Microsoft.Extensions.CommandLineUtils": "1.0.0"
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
+    "Microsoft.Extensions.FileSystemGlobbing": "1.0.0"
   },
 
   "frameworks": {

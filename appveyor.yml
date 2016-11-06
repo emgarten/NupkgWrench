@@ -1,4 +1,4 @@
-version: '1.0.3-ci.{build}'
+version: '1.1.0-ci.{build}'
 init:
   - git config --global core.autocrlf true
 branches:

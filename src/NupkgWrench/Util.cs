@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.FileSystemGlobbing;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -167,7 +168,8 @@ namespace NupkgWrench
 
             if (packages.Length > 1)
             {
-                throw new ArgumentException($"This command only works for a single nupkg. The input filters given match multiple nupkgs:{Environment.NewLine}{string.Join(Environment.NewLine + "  -", packages)}");
+                var joinString = Environment.NewLine + "  - ";
+                throw new ArgumentException($"This command only works for a single nupkg. The input filters given match multiple nupkgs:{joinString}{string.Join(joinString, packages)}");
             }
             else if (packages.Length < 1)
             {
@@ -279,28 +281,78 @@ namespace NupkgWrench
 
             foreach (var input in inputs)
             {
-                var inputFile = Path.GetFullPath(input);
-
-                if (Directory.Exists(inputFile))
+                if (IsGlobbingPattern(input))
                 {
-                    var directoryFiles = Directory.GetFiles(inputFile, "*.nupkg", SearchOption.AllDirectories).ToList();
-
-                    files.UnionWith(directoryFiles);
+                    // Resolver globbing pattern
+                    files.AddRange(ResolveGlobbingPattern(input));
                 }
-                else if (inputFile.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    if (File.Exists(inputFile))
+                    // Resolve file or directory
+                    var inputFile = Path.GetFullPath(input);
+
+                    if (Directory.Exists(inputFile))
                     {
-                        files.Add(inputFile);
+                        var directoryFiles = Directory.GetFiles(inputFile, "*.nupkg", SearchOption.AllDirectories).ToList();
+
+                        files.UnionWith(directoryFiles);
                     }
-                    else
+                    else if (inputFile.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new FileNotFoundException($"Unable to find '{inputFile}'.");
+                        if (File.Exists(inputFile))
+                        {
+                            files.Add(inputFile);
+                        }
+                        else
+                        {
+                            throw new FileNotFoundException($"Unable to find '{inputFile}'.");
+                        }
                     }
                 }
             }
 
             return files;
+        }
+
+        private static SortedSet<string> ResolveGlobbingPattern(string pattern)
+        {
+            var patternSplit = SplitGlobbingPattern(pattern);
+
+            var matcher = new Matcher();
+            matcher = matcher.AddInclude(patternSplit.Item2);
+
+            return new SortedSet<string>(matcher.GetResultsInFullPath(patternSplit.Item1.FullName).Select(Path.GetFullPath), StringComparer.Ordinal);
+        }
+
+        private static Tuple<DirectoryInfo, string> SplitGlobbingPattern(string pattern)
+        {
+            var parts = pattern.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            DirectoryInfo dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var relativePattern = string.Empty;
+            var globbingHit = false;
+
+            for (int i=0; i < parts.Length; i++)
+            {
+                if (globbingHit || IsGlobbingPattern(parts[i]))
+                {
+                    // Append to pattern
+                    globbingHit = true;
+                    relativePattern = $"{relativePattern}{Path.DirectorySeparatorChar}{parts[i]}";
+                }
+                else
+                {
+                    // Append to root dir
+                    dir = new DirectoryInfo(Path.Combine(dir.FullName, parts[i]));
+                }
+            }
+
+            return new Tuple<DirectoryInfo, string>(dir, relativePattern);
+        }
+
+        private static bool IsGlobbingPattern(string possiblePattern)
+        {
+            return possiblePattern.IndexOf("*") > -1;
         }
 
         public static PackageIdentity GetIdentityOrNull(string path)

@@ -39,6 +39,44 @@ namespace NupkgWrench.Tests
             }
         }
 
+        [Theory]
+        [InlineData("**/*.nupkg", 6)]
+        [InlineData("subFolder/*.nupkg", 6)]
+        [InlineData("subFolder/*.0.*.nupkg", 5)]
+        [InlineData("*.nupkg", 0)]
+        [InlineData("**", 6)]
+        [InlineData("**/a.*", 2)]
+        [InlineData("**/c.2.0.0-beta.1.nupkg", 1)]
+        [InlineData("subFolder/c.2.0.0-beta.1.*", 1)]
+        [InlineData("subFolder/d.2.0.0-beta.1.*", 0)]
+        public void Util_GetPackagesWithFilter_GlobbingPatterns(string pattern, int count)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var subFolder = Path.Combine(workingDir.Root, "subFolder");
+                CreatePackages(subFolder);
+
+                var log = new TestLogger();
+
+                var input = workingDir.Root + Path.DirectorySeparatorChar + pattern;
+
+                // Act
+                var files = Util.GetPackagesWithFilter(
+                    idFilter: null,
+                    versionFilter: null,
+                    excludeSymbols: false,
+                    highestVersionFilter: false,
+                    inputs: new[] { input });
+
+                // Use only the names
+                var names = new List<string>(files.Select(path => Path.GetFileName(path)));
+
+                // Assert
+                Assert.Equal(count, files.Count);
+            }
+        }
+
         [Fact]
         public void Util_GetPackagesWithFilter_HighestVersion()
         {

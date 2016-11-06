@@ -247,6 +247,63 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_ListCommand_GlobbingPath()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.2.2"
+                    }
+                };
+
+                var testPackageB = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "b",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var testPackageC = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "c",
+                        Version = "2.0.0"
+                    }
+                };
+
+                var subFolder = Path.Combine(workingDir.Root, "subFolder");
+
+                var zipFileA = testPackageA.Create(subFolder);
+                var zipFileB = testPackageB.Create(subFolder);
+                var zipFileC = testPackageC.Create(subFolder);
+
+                var log = new TestLogger();
+
+                var input = workingDir.Root + Path.DirectorySeparatorChar + "**/*.nupkg";
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "list", input }, log);
+
+                var files = log.Messages.Select(e => Path.GetFileName(e)).OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(3, files.Count);
+                Assert.Equal("a.1.0.0-beta.2.2.nupkg", files[0]);
+                Assert.Equal("b.1.0.0-beta.1.2.nupkg", files[1]);
+                Assert.Equal("c.2.0.0.nupkg", files[2]);
+            }
+        }
+
+        [Fact]
         public async Task Command_ListCommand_Id()
         {
             using (var workingDir = new TestFolder())

@@ -22,9 +22,10 @@ namespace NupkgWrench
         {
             cmd.Description = "Convert a set of pre-release packages to stable or the specified version/release label. Package dependencies will also be modified to match. Defaults to stable.";
 
-            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterDesc, CommandOptionType.SingleValue);
             var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+            var highestVersionFilter = cmd.Option(Constants.HighestVersionFilterTemplate, Constants.HighestVersionFilterDesc, CommandOptionType.NoValue);
 
             var newVersion = cmd.Option("-n|--new-version", "New version, this replaces the entire version of the nupkg. Cannot be used with --label.", CommandOptionType.SingleValue);
             var label = cmd.Option("-r|--label", "Pre-release label, this keeps the version number the same and only modifies the release label. Cannot be used with --new-version.", CommandOptionType.SingleValue);
@@ -72,7 +73,7 @@ namespace NupkgWrench
                     }
 
                     // Gather all package data
-                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
+                    var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
                     var packageSet = new List<Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>>();
                     var updatedIds = new HashSet<string>();

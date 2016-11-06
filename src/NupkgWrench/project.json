@@ -26,7 +26,7 @@
   },
 
   "dependencies": {
-    "NuGet.Packaging": "3.5.0-rc1-final",
+    "NuGet.Packaging": "3.5.0",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0"
   },
 
@@ -52,7 +52,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0"
+          "version": "1.0.1"
         }
       }
     }

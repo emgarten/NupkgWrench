@@ -22,6 +22,7 @@ namespace NupkgWrench.Tests
                     idFilter: null,
                     versionFilter: null,
                     excludeSymbols: false,
+                    highestVersionFilter: false,
                     inputs: new[] { workingDir.Root });
 
                 // Use only the names
@@ -35,6 +36,37 @@ namespace NupkgWrench.Tests
                 Assert.Equal("b.2.0.0.0.symbols.nupkg", names[3]);
                 Assert.Equal("c.2.0.0-beta.1.nupkg", names[4]);
                 Assert.Equal("c.2.0.0-beta.2.nupkg", names[5]);
+            }
+        }
+
+        [Fact]
+        public void Util_GetPackagesWithFilter_HighestVersion()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                CreatePackages(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var files = Util.GetPackagesWithFilter(
+                    idFilter: null,
+                    versionFilter: null,
+                    excludeSymbols: false,
+                    highestVersionFilter: true,
+                    inputs: new[] { workingDir.Root });
+
+                // Use only the names
+                var names = new List<string>(files.Select(path => Path.GetFileName(path)));
+
+                // Assert
+                Assert.Equal(5, files.Count);
+                Assert.Equal("a.1.0.nupkg", names[0]);
+                Assert.Equal("a.1.0.symbols.nupkg", names[1]);
+                Assert.Equal("b.2.0.0.0.nupkg", names[2]);
+                Assert.Equal("b.2.0.0.0.symbols.nupkg", names[3]);
+                Assert.Equal("c.2.0.0-beta.2.nupkg", names[4]);
             }
         }
 
@@ -53,6 +85,7 @@ namespace NupkgWrench.Tests
                     idFilter: null,
                     versionFilter: null,
                     excludeSymbols: true,
+                    highestVersionFilter: false,
                     inputs: new[] { workingDir.Root });
 
                 // Use only the names
@@ -82,6 +115,7 @@ namespace NupkgWrench.Tests
                     idFilter: "b",
                     versionFilter: null,
                     excludeSymbols: false,
+                    highestVersionFilter: false,
                     inputs: new[] { workingDir.Root });
 
                 // Use only the names
@@ -109,6 +143,7 @@ namespace NupkgWrench.Tests
                     idFilter: null,
                     versionFilter: "2.0.*",
                     excludeSymbols: false,
+                    highestVersionFilter: false,
                     inputs: new[] { workingDir.Root });
 
                 // Use only the names

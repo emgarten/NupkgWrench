@@ -18,12 +18,17 @@ namespace NupkgWrench
         {
             cmd.Description = "Extract a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterDesc, CommandOptionType.SingleValue);
+            var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+            var highestVersionFilter = cmd.Option(Constants.HighestVersionFilterTemplate, Constants.HighestVersionFilterDesc, CommandOptionType.NoValue);
+
             var output = cmd.Option("-o|--output", "Output folder, all nupkg files will be placed in the root of this folder.", CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
-                "Nupkg path",
-                multipleValues: false);
+                "Path to an individual package or directory containing a single package.",
+                multipleValues: true);
 
             var required = new List<CommandOption>()
             {
@@ -41,12 +46,14 @@ namespace NupkgWrench
                     }
                 }
 
-                var nupkgPath = argRoot.Value;
+                var inputs = argRoot.Values;
 
-                if (string.IsNullOrEmpty(nupkgPath))
+                if (inputs.Count < 1)
                 {
-                    throw new ArgumentException("Specify the path to a nupkg.");
+                    inputs.Add(Directory.GetCurrentDirectory());
                 }
+
+                var nupkgPath = Util.GetSinglePackageWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
                 Directory.CreateDirectory(output.Value());
 

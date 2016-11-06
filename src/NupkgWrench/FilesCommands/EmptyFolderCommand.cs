@@ -17,9 +17,11 @@ namespace NupkgWrench
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
             cmd.Description = "Add an empty folder _._ placeholder to a nupkg, existing files in the folder will be removed.";
-            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterDesc, CommandOptionType.SingleValue);
             var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+            var highestVersionFilter = cmd.Option(Constants.HighestVersionFilterTemplate, Constants.HighestVersionFilterDesc, CommandOptionType.NoValue);
+
             cmd.HelpOption(Constants.HelpOption);
             var pathOption = cmd.Option("-p|--path", "Path within the nupkg to add an _._ file.", CommandOptionType.MultipleValue);
 
@@ -43,7 +45,7 @@ namespace NupkgWrench
                 }
 
                 // Gather all package data
-                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
+                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
                 // Validate parameters
                 foreach (var requiredOption in required)

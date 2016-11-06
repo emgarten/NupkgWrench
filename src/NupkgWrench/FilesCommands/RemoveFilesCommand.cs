@@ -19,9 +19,10 @@ namespace NupkgWrench
             cmd.Description = "Remove files from a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
             var pathOption = cmd.Option("-p|--path", "Paths to remove. These may include wildcards.", CommandOptionType.MultipleValue);
-            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterTemplate, CommandOptionType.SingleValue);
-            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterTemplate, CommandOptionType.SingleValue);
+            var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
+            var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterDesc, CommandOptionType.SingleValue);
             var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.SingleValue);
+            var highestVersionFilter = cmd.Option(Constants.HighestVersionFilterTemplate, Constants.HighestVersionFilterDesc, CommandOptionType.NoValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -43,7 +44,7 @@ namespace NupkgWrench
                 }
 
                 // Gather all package data
-                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, inputs.ToArray());
+                var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
                 // Validate parameters
                 foreach (var requiredOption in required)

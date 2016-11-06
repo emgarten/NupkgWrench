@@ -12,5 +12,11 @@
 
         internal const string IdFilterTemplate = "-i|--id";
         internal const string IdFilterDesc = "Filter to only packages matching the id or wildcard.";
+
+        internal const string HighestVersionFilterTemplate = "--highest-version";
+        internal const string HighestVersionFilterDesc = "Filter to only the highest version for a package id.";
+
+        internal const string FirstMatchFilterTemplate = "--first-match";
+        internal const string FirstMatchFilterDesc = "Apply the action only to the first match found.";
     }
 }

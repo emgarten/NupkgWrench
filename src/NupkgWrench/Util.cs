@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NupkgWrench
 {
@@ -147,20 +149,60 @@ namespace NupkgWrench
         }
 
         /// <summary>
+        /// Filter packages down to a single package or throw.
+        /// </summary>
+        public static string GetSinglePackageWithFilter(
+            CommandOption idFilter,
+            CommandOption versionFilter,
+            CommandOption excludeSymbols,
+            CommandOption highestVersionFilter,
+            string[] inputs)
+        {
+            var packages = GetPackagesWithFilter(idFilter,
+                versionFilter,
+                excludeSymbols,
+                highestVersionFilter,
+                inputs)
+                .ToArray();
+
+            if (packages.Length > 1)
+            {
+                throw new ArgumentException($"This command only works for a single nupkg. The input filters given match multiple nupkgs:{Environment.NewLine}{string.Join(Environment.NewLine + "  -", packages)}");
+            }
+            else if (packages.Length < 1)
+            {
+                throw new ArgumentException($"This command only works for a single nupkg. The input filters given match zero nupkgs.");
+            }
+
+            return packages[0];
+        }
+
+        /// <summary>
         /// Filter packages
         /// </summary>
-        public static IEnumerable<string> GetPackagesWithFilter(CommandOption idFilter, CommandOption versionFilter, CommandOption excludeSymbols, string[] inputs)
+        public static IEnumerable<string> GetPackagesWithFilter(
+            CommandOption idFilter,
+            CommandOption versionFilter,
+            CommandOption excludeSymbols,
+            CommandOption highestVersionFilter,
+            string[] inputs)
         {
             return GetPackagesWithFilter(idFilter.HasValue() ? idFilter.Value() : null,
                 versionFilter.HasValue() ? versionFilter.Value() : null,
-                excludeSymbols.HasValue() ? true : false,
+                excludeSymbols.HasValue(),
+                highestVersionFilter.HasValue(),
                 inputs);
         }
 
         /// <summary>
         /// Filter packages
         /// </summary>
-        public static SortedSet<string> GetPackagesWithFilter(string idFilter, string versionFilter, bool excludeSymbols, string[] inputs)
+        public static SortedSet<string> GetPackagesWithFilter(
+            string idFilter,
+            string versionFilter,
+            bool excludeSymbols,
+            bool highestVersionFilter,
+            string[] inputs)
         {
             var files = GetPackages(inputs);
 
@@ -169,24 +211,60 @@ namespace NupkgWrench
                 files.RemoveWhere(path => !IsFilterMatch(idFilter, versionFilter, excludeSymbols, path));
             }
 
+            if (highestVersionFilter)
+            {
+                var identities = GetPathToIdentity(files);
+                var highestVersions = GetHighestVersionsById(identities);
+
+                files = new SortedSet<string>(identities.Where(e => highestVersions.Contains(e.Value)).Select(e => e.Key));
+            }
+
             return files;
+        }
+
+        private static HashSet<PackageIdentity> GetHighestVersionsById(Dictionary<string, PackageIdentity> identities)
+        {
+            var results = new HashSet<PackageIdentity>();
+
+            foreach (var group in identities.GroupBy(e => e.Value.Id, StringComparer.OrdinalIgnoreCase))
+            {
+                results.Add(group.OrderByDescending(e => e.Value.Version).First().Value);
+            }
+
+            return results;
+        }
+
+        private static Dictionary<string, PackageIdentity> GetPathToIdentity(SortedSet<string> paths)
+        {
+            var mappings = new Dictionary<string, PackageIdentity>(StringComparer.Ordinal);
+
+            foreach (var path in paths)
+            {
+                var identity = GetIdentityOrNull(path);
+
+                // Filter out bad packages
+                if (identity != null)
+                {
+                    mappings.Add(path, identity);
+                }
+            }
+
+            return mappings;
         }
 
         private static bool IsFilterMatch(string idFilter, string versionFilter, bool excludeSymbols, string path)
         {
-            using (var reader = new PackageArchiveReader(path))
-            {
-                var identity = reader.GetIdentity();
+            var identity = GetIdentityOrNull(path);
 
-                // Check all forms of the version
-                if (IsMatch(identity.Id, idFilter)
-                    && (IsMatch(identity.Version.ToString(), versionFilter)
-                    || IsMatch(identity.Version.ToNormalizedString(), versionFilter)
-                    || IsMatch(identity.Version.ToFullString(), versionFilter))
-                    && (!excludeSymbols || !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return true;
-                }
+            // Check all forms of the version
+            if (identity != null
+                && IsMatch(identity.Id, idFilter)
+                && (IsMatch(identity.Version.ToString(), versionFilter)
+                || IsMatch(identity.Version.ToNormalizedString(), versionFilter)
+                || IsMatch(identity.Version.ToFullString(), versionFilter))
+                && (!excludeSymbols || !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
             }
 
             return false;
@@ -223,6 +301,27 @@ namespace NupkgWrench
             }
 
             return files;
+        }
+
+        public static PackageIdentity GetIdentityOrNull(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    using (var reader = new PackageArchiveReader(path))
+                    {
+                        return reader.GetIdentity();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore bad packages, these might be only partially written to disk.
+                Debug.Fail("Failed to get identity");
+            }
+
+            return null;
         }
     }
 }

@@ -19,11 +19,11 @@ artifacts:
     name: xplat
 deploy:
   provider: NuGet
-  server: https://www.myget.org/F/NupkgWrench/api/v2/package
+  server: https://www.myget.org/F/nupkgwrench/api/v2/package
   api_key:
     secure: xap/w8Pi8ZkgpAwE0ofkKjtO8NTzeK0Gwm4LUPwRb+crbXkLInOfoapPE/fZXHvz
   skip_symbols: false
-  symbol_server: https://www.myget.org/F/NupkgWrench/symbols/api/v2/package
+  symbol_server: https://www.myget.org/F/nupkgwrench/symbols/api/v2/package
   artifact: /.*\.nupkg/
   on:
     branch: master

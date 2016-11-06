@@ -12,7 +12,7 @@ curl -o .cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/f4ce
 
 # Run install.sh
 chmod +x .cli/dotnet-install.sh
-.cli/dotnet-install.sh -i .cli -c preview -v 1.0.0-preview2-003121
+.cli/dotnet-install.sh -i .cli -c preview -v 1.0.0-preview2-003131
 
 # Display info
 DOTNET="$(pwd)/.cli/dotnet"
@@ -32,5 +32,13 @@ do
         RESULTCODE=1
     fi
 done
+
+# publish
+$DOTNET publish src/NupkgWrench -o artifacts/publish/NupkgWrench -f netcoreapp1.0 --configuration release
+
+if [ $? -ne 0 ]; then
+    echo "publish FAILED"
+    RESULTCODE=1
+fi
 
 exit $RESULTCODE

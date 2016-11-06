@@ -1,8 +1,15 @@
+param (
+    [switch]$SkipTests,
+    [switch]$SkipPack,
+    [switch]$StableVersion
+)
+
+$BuildNumberDateBase = "2016-11-01"
 $RepoRoot = $PSScriptRoot
 
 trap
 {
-    Write-Host "build failed"
+    Write-Error "FAILED!"
     exit 1
 }
 
@@ -17,9 +24,10 @@ Install-PackagesConfig $RepoRoot
 
 $ArtifactsDir = Join-Path $RepoRoot 'artifacts'
 $nugetExe = Join-Path $RepoRoot '.nuget\nuget.exe'
-$ILMergeExe = Join-Path $RepoRoot 'packages\ILRepack.2.0.10\tools\ILRepack.exe'
+$ILMergeExe = Join-Path $RepoRoot 'packages\ILRepack.2.0.12\tools\ILRepack.exe'
 $dotnetExe = Get-DotnetCLIExe $RepoRoot
 $nupkgWrenchExe = Join-Path $ArtifactsDir 'nupkgwrench.exe'
+$zipExe = Join-Path $RepoRoot 'packages\7ZipCLI.9.20.0\tools\7za.exe'
 
 # Clear artifacts
 Remove-Item -Recurse -Force $ArtifactsDir | Out-Null
@@ -28,12 +36,15 @@ Remove-Item -Recurse -Force $ArtifactsDir | Out-Null
 & $nugetExe restore $RepoRoot
 
 # Run tests
-& $dotnetExe test (Join-Path $RepoRoot "test\NupkgWrench.Tests")
-
-if (-not $?)
+if (-not $SkipTests)
 {
-    Write-Host "tests failed!!!"
-    exit 1
+    & $dotnetExe test (Join-Path $RepoRoot "test\NupkgWrench.Tests")
+
+    if (-not $?)
+    {
+        Write-Host "tests failed!!!"
+        exit 1
+    }
 }
 
 # Publish for ILMerge
@@ -45,42 +56,83 @@ $ILMergeOpts += Get-ChildItem $net46Root -Exclude @('*.exe', '*compression*', '*
 $ILMergeOpts += '/out:' + (Join-Path $ArtifactsDir 'NupkgWrench.exe')
 $ILMergeOpts += '/log'
 $ILMergeOpts += '/ndebug'
+$ILMergeOpts += '/parallel'
 
 Write-Host "ILMerging NupkgWrench.exe"
 & $ILMergeExe $ILMergeOpts | Out-Null
 
 if (-not $?)
 {
+    # Get failure message
+    Write-Host $ILMergeExe $ILMergeOpts
+    & $ILMergeExe $ILMergeOpts
     Write-Host "ILMerge failed!"
     exit 1
 }
 
-# Pack
-& $dotnetExe pack (Join-Path $RepoRoot "src\NupkgWrench") --no-build --output $ArtifactsDir
-
-if (-not $?)
+if (-not $SkipPack)
 {
-    Write-Host "Pack failed!"
-    exit 1
+    # Pack
+    if ($StableVersion)
+    {
+        & $dotnetExe pack (Join-Path $RepoRoot "src\NupkgWrench") --no-build --output $ArtifactsDir
+    }
+    else
+    {
+        $buildNumber = Get-BuildNumber $BuildNumberDateBase
+
+        & $dotnetExe pack (Join-Path $RepoRoot "src\NupkgWrench") --no-build --output $ArtifactsDir --version-suffix "beta.$buildNumber"
+    }
+
+    if (-not $?)
+    {
+        Write-Host "Pack failed!"
+        exit 1
+    }
+
+    # use the build to modify the nupkg
+    & $nupkgWrenchExe files emptyfolder artifacts -p lib/net451
+    & $nupkgWrenchExe nuspec frameworkassemblies clear artifacts
+    & $nupkgWrenchExe nuspec dependencies emptygroup artifacts -f net451
+
+    # Get version number
+    $nupkgPath = (& $nupkgWrenchExe list artifacts --exclude-symbols -id nupkgwrench) | Out-String
+    $nupkgPath = $nupkgPath.Trim()
+
+    Write-Host "-----------------------------"
+    Write-Host "Nupkg: $nupkgPath" 
+    $nupkgVersion = (& $nupkgWrenchExe version $nupkgPath) | Out-String
+    $nupkgVersion = $nupkgVersion.Trim()
+    Write-Host "Version: $nupkgVersion"
+    Write-Host "-----------------------------"
+
+    # Create xplat tar
+    $versionFolderName = "nupkgwrench.$nupkgVersion".ToLowerInvariant()
+    $versionFolder = Join-Path artifacts\publish $versionFolderName
+    & $dotnetExe publish src\NupkgWrench -o $versionFolder -f netcoreapp1.0 --configuration release
+
+    if (-not $?)
+    {
+        Write-Host "Publish failed!"
+        exit 1
+    }
+
+    pushd "artifacts\publish"
+
+    # clean up pdbs
+    rm $versionFolderName\*.pdb
+
+    # bzip the portable netcore app folder
+    & $zipExe "a" "$versionFolderName.tar" $versionFolderName
+    & $zipExe "a" "..\$versionFolderName.tar.bz2" "$versionFolderName.tar"
+
+    if (-not $?)
+    {
+        Write-Host "Zip failed!"
+        exit 1
+    }
+
+    popd
 }
-
-# use the build to modify the nupkg
-& $nupkgWrenchExe files emptyfolder artifacts -p lib/net451
-& $nupkgWrenchExe nuspec frameworkassemblies clear artifacts
-& $nupkgWrenchExe nuspec dependencies emptygroup artifacts -f net451
-
-# Create xplat tar
-& $dotnetExe publish src\NupkgWrench -o artifacts\publish\NupkgWrench -f netcoreapp1.0 --configuration release
-
-pushd "artifacts\publish"
-
-# clean up pdbs
-rm nupkgwrench\*.pdb
-
-# bzip the portable netcore app folder
-& "$RepoRoot\packages\7ZipCLI.9.20.0\tools\7za.exe" "a" "NupkgWrench.tar" "NupkgWrench"
-& "$RepoRoot\packages\7ZipCLI.9.20.0\tools\7za.exe" "a" "..\NupkgWrench.tar.bz2" "NupkgWrench.tar"
-
-popd
 
 Write-Host "Success!"

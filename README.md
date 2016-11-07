@@ -12,6 +12,8 @@ NupkgWrench is a cross platform command line tool for listing and modifying nupk
 
 * [Github releases](https://github.com/emgarten/NupkgWrench/releases/latest)
 * [NuGet package](https://www.nuget.org/packages/NupkgWrench)
+* [Nightly nupkg on myget](https://www.myget.org/F/nupkgwrench/api/v2/package/NupkgWrench/)
+* [Nightly builds on appveyor](https://ci.appveyor.com/project/emgarten/nupkgwrench/build/artifacts)
 
 ## Features
 * Change the version, release label, or convert packages from pre-release to stable across a folder of nupkgs. NupkgWrench will modify all dependency version ranges to match the new package versions.
@@ -33,7 +35,7 @@ This solution uses .NET Core, get the tools [here](http://dot.net/).
 | Command            | Description |
 | ------------------ | ----------- |
 | ``compress`` | Create a nupkg from a folder. |
-| ``extract``  | Extract a nupkg. |
+| ``extract``  | Extract a nupkg to a folder. |
 | ``files add`` | Add a file to a nupkg.
 | ``files emptyfolder`` | Add an empty folder _._ placeholder to a nupkg, existing files in the folder will be removed. |
 | ``files list`` | List files inside a nupkg. |
@@ -76,11 +78,11 @@ lib/net45/a.dll
 
 ### Bulk editting packages and filters
 
-Most commands for modifying packages can take a set of both file and directory paths, options are provided to filter on id, version, and symbol packages. This let's NupkgWrench do the work of finding the right packages.
+Most commands for modifying packages can take a set of file, directory paths, and file globbing patterns. Options are provided to filter on id, version, and symbol packages. This let's NupkgWrench do the work of finding the right packages.
 
 The list command makes it easy to see what an edit command will operate on, it simply lists all matching nupkg files that meet the filter criteria.
 
-Filters: ``--id``, ``--version``, ``--exclude-symbols``
+Filters: ``--id``, ``--version``, ``--exclude-symbols``, ``--highest-version``
 
 ```
 > NupkgWrench list c:\nupkgs c:\nupkgs2 c:\nupkgs3\packageA.1.0.0.nupkg d:\morenupkgs
@@ -101,6 +103,16 @@ d:\morenupkgs\packageZ.3.0.0-beta.1.2.nupkg
 
 > NupkgWrench list c:\nupkgs c:\nupkgs2 c:\nupkgs3\packageA.1.0.0.nupkg d:\morenupkgs --version 1.0
 c:\nupkgs3\packageA.1.0.0.nupkg
+```
+
+File globbing may be used along with other filters, the ``**`` and ``*`` patterns can be used to search all sub directories and partial file names. Filters may be applied on top of these globbing patterns to give better control over the selected nupkgs.
+
+```
+> NupkgWrench list c:\work\**\packageX*2.*.nupkg --highest-version
+c:\work\nupkgs\packageX.2.0.0-beta.nupkg
+
+> NupkgWrench list c:\work\**\*2.*.nupkg --highest-version --id packageX
+c:\work\nupkgs\packageX.2.0.0-beta.nupkg
 ```
 
 ### Convert to release

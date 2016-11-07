@@ -326,12 +326,44 @@ namespace NupkgWrench
 
         public static Tuple<DirectoryInfo, string> SplitGlobbingPattern(string pattern)
         {
-            var parts = pattern.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var isRooted = IsPathRooted(pattern);
+            var fullPattern = pattern;
 
-            DirectoryInfo dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            if (!isRooted)
+            {
+                // Prefix the current directory if this is a relative path
+                fullPattern = Directory.GetCurrentDirectory() + "/" + pattern;
+            }
+
+            var parts = fullPattern.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            DirectoryInfo dir = null;
+
+            if (parts.Length > 1 && !IsGlobbingPattern(parts[0]))
+            {
+                if (Path.DirectorySeparatorChar == '/')
+                {
+                    // Non-Windows
+                    dir = new DirectoryInfo($"/{parts[0]}/");
+                }
+                else
+                {
+                    // Windows
+                    dir = new DirectoryInfo($"{parts[0]}\\");
+                }
+
+                // Remove the first part
+                parts = parts.Skip(1).ToArray();
+            }
+            else
+            {
+                dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            }
+
             var relativePattern = string.Empty;
             var globbingHit = false;
 
+            // Skip the root, it was handled above
             for (int i=0; i < parts.Length; i++)
             {
                 if (globbingHit || IsGlobbingPattern(parts[i]))
@@ -353,6 +385,21 @@ namespace NupkgWrench
         private static bool IsGlobbingPattern(string possiblePattern)
         {
             return possiblePattern.IndexOf("*") > -1;
+        }
+
+        private static bool IsPathRooted(string possiblePattern)
+        {
+            if (Path.DirectorySeparatorChar == '/')
+            {
+                // Non-windows, Verify starts with a /
+                return possiblePattern.StartsWith("/");
+            }
+            else
+            {
+                // Windows, Verify a : comes before a slash
+                return possiblePattern.IndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar })
+                    > possiblePattern.IndexOf(':');
+            }
         }
 
         public static PackageIdentity GetIdentityOrNull(string path)

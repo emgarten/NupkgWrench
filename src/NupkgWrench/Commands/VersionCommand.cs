@@ -14,7 +14,7 @@ namespace NupkgWrench
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Display the package version of a nupkg. This command operates on a single nupkg.";
+            cmd.Description = "Display the package version of a nupkg.";
             cmd.HelpOption(Constants.HelpOption);
             var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
             var versionFilter = cmd.Option(Constants.VersionFilterTemplate, Constants.VersionFilterDesc, CommandOptionType.SingleValue);
@@ -25,7 +25,7 @@ namespace NupkgWrench
 
             var argRoot = cmd.Argument(
                 "[root]",
-                "Path to an individual package or directory containing a single package.",
+                Constants.SinglePackageRootDesc,
                 multipleValues: true);
 
             cmd.OnExecute(() =>

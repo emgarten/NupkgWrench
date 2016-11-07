@@ -409,6 +409,23 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_ListCommand_NoMatch_VerifyNoOutput()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "list", workingDir.Root }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(0, log.Messages.Count);
+            }
+        }
+
+        [Fact]
         public async Task Command_ListCommand_Version()
         {
             using (var workingDir = new TestFolder())

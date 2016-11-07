@@ -96,13 +96,10 @@ if (-not $SkipPack)
     & $nupkgWrenchExe nuspec dependencies emptygroup artifacts -f net451
 
     # Get version number
-    $nupkgPath = (& $nupkgWrenchExe list artifacts --exclude-symbols -id nupkgwrench) | Out-String
-    $nupkgPath = $nupkgPath.Trim()
+    $nupkgVersion = (& $nupkgWrenchExe version artifacts --exclude-symbols -id nupkgwrench) | Out-String
+    $nupkgVersion = $nupkgVersion.Trim()
 
     Write-Host "-----------------------------"
-    Write-Host "Nupkg: $nupkgPath" 
-    $nupkgVersion = (& $nupkgWrenchExe version $nupkgPath) | Out-String
-    $nupkgVersion = $nupkgVersion.Trim()
     Write-Host "Version: $nupkgVersion"
     Write-Host "-----------------------------"
 

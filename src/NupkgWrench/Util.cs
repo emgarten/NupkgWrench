@@ -324,7 +324,7 @@ namespace NupkgWrench
             return new SortedSet<string>(matcher.GetResultsInFullPath(patternSplit.Item1.FullName).Select(Path.GetFullPath), StringComparer.Ordinal);
         }
 
-        private static Tuple<DirectoryInfo, string> SplitGlobbingPattern(string pattern)
+        public static Tuple<DirectoryInfo, string> SplitGlobbingPattern(string pattern)
         {
             var parts = pattern.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -338,7 +338,7 @@ namespace NupkgWrench
                 {
                     // Append to pattern
                     globbingHit = true;
-                    relativePattern = $"{relativePattern}{Path.DirectorySeparatorChar}{parts[i]}";
+                    relativePattern = $"{relativePattern}/{parts[i]}";
                 }
                 else
                 {

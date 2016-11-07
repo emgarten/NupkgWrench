@@ -69,11 +69,33 @@ namespace NupkgWrench.Tests
                     highestVersionFilter: false,
                     inputs: new[] { input });
 
-                // Use only the names
-                var names = new List<string>(files.Select(path => Path.GetFileName(path)));
-
                 // Assert
                 Assert.Equal(count, files.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData("**/*.nupkg", "/**/*.nupkg")]
+        [InlineData("subFolder/*.nupkg", "/*.nupkg")]
+        [InlineData("subFolder/*.0.*.nupkg", "/*.0.*.nupkg")]
+        [InlineData("*.nupkg", "/*.nupkg")]
+        [InlineData("**", "/**")]
+        [InlineData("**/a.*", "/**/a.*")]
+        [InlineData("**/c.2.0.0-beta.1.nupkg", "/**/c.2.0.0-beta.1.nupkg")]
+        [InlineData("subFolder/c.2.0.0-beta.1.*", "/c.2.0.0-beta.1.*")]
+        [InlineData("subFolder/d.2.0.0-beta.1.*", "/d.2.0.0-beta.1.*")]
+        public void Util_SplitGlobbingPattern(string pattern, string expected)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var input = workingDir.Root + Path.DirectorySeparatorChar + pattern;
+
+                // Act
+                var parts = Util.SplitGlobbingPattern(input);
+
+                // Assert
+                Assert.True(expected == parts.Item2, parts.Item1.ToString() + "|" + parts.Item2);
             }
         }
 

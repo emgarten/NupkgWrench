@@ -192,6 +192,82 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_VersionCommand_FilterByIdToSingleMatch()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var testPackage2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "aa",
+                        Version = "1.0.0-beta.2.2"
+                    }
+                };
+
+                testPackage1.Create(workingDir.Root);
+                testPackage2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root, "--id", "a" }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains("1.0.0-beta.1.2", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_VersionCommand_FilterByIdToSingleMatchExcludeSymbols()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage1 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta.1.2"
+                    }
+                };
+
+                var testPackage2 = new TestPackageContext()
+                {
+                    Nuspec = new TestNuspecContext()
+                    {
+                        Id = "aa",
+                        Version = "1.0.0-beta.2.2"
+                    }
+                };
+
+                testPackage1.Create(workingDir.Root);
+                testPackage2.Create(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "version", workingDir.Root, "--id", "a", "--exclude-symbols" }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains("1.0.0-beta.1.2", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
         public async Task Command_ListCommandNoFilters()
         {
             using (var workingDir = new TestFolder())

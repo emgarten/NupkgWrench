@@ -161,6 +161,34 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public void Util_GetPackagesWithFilter_ExcludeSymbols_AndId()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                CreatePackages(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var files = Util.GetPackagesWithFilter(
+                    idFilter: "c",
+                    versionFilter: null,
+                    excludeSymbols: true,
+                    highestVersionFilter: false,
+                    inputs: new[] { workingDir.Root });
+
+                // Use only the names
+                var names = new List<string>(files.Select(path => Path.GetFileName(path)));
+
+                // Assert
+                Assert.Equal(2, files.Count);
+                Assert.Equal("c.2.0.0-beta.1.nupkg", names[0]);
+                Assert.Equal("c.2.0.0-beta.2.nupkg", names[1]);
+            }
+        }
+
+        [Fact]
         public void Util_GetPackagesWithFilter_IdFilter()
         {
             using (var workingDir = new TestFolder())

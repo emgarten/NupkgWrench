@@ -1,0 +1,11 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Version>1.1.1</Version>
+    <Authors>emgarten</Authors>
+    <PackageTags>nupkg;nuget-powertool</PackageTags>
+    <PackageProjectUrl>https://github.com/emgarten/NupkgWrench</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/emgarten/NupkgWrench</RepositoryUrl>
+  </PropertyGroup>
+</Project>

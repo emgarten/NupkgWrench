@@ -1,12 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
+using NuGet.Packaging.Core;
+using NuGet.Test.Helpers;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NupkgWrench.Tests
 {
     public class UtilTests
     {
+        [Theory]
+        [InlineData("a.1.0.0.symbols.nupkg", true)]
+        [InlineData("/usr/home/a.1.0.0.symbols.nupkg", true)]
+        [InlineData(".symbols.nupkg", true)]
+        [InlineData("", false)]
+        [InlineData("/usr/home/a.1.0.0.nupkg", false)]
+        [InlineData("a.1.0.0.nupkg", false)]
+        public void GivenAPathVerifySymbolPackage(string path, bool expected)
+        {
+            Util.IsSymbolPackage(path).Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("a", "1.0.0", "a.1.0.0")]
+        [InlineData("a", "1.0", "a.1.0")]
+        [InlineData("a", "1.0.0.0", "a.1.0.0.0")]
+        [InlineData("a", "1.0.0+git", "a.1.0.0")]
+        [InlineData("a", "1.0.0-beta.2+git", "a.1.0.0-beta.2")]
+        [InlineData("a.1", "1.0.0-beta.2+git", "a.1.1.0.0-beta.2")]
+        [InlineData("A", "1.0.0-BETA", "A.1.0.0-BETA")]
+        public void GivenAnIdVersionVerifyNupkgName(string id, string version, string expected)
+        {
+            var identity = new PackageIdentity(id, NuGetVersion.Parse(version));
+
+            // non symbol
+            Util.GetNupkgName(identity, isSymbolPackage: false).Should().Be(expected + ".nupkg");
+
+            // symbol
+            Util.GetNupkgName(identity, isSymbolPackage: true).Should().Be(expected + ".symbols.nupkg");
+        }
+
         [Fact]
         public void Util_GetPackagesWithFilter_NoFilters()
         {
@@ -248,46 +283,46 @@ namespace NupkgWrench.Tests
 
         private static void CreatePackages(string workingDir)
         {
-            var testPackageA = new TestPackageContext()
+            var testPackageA = new TestNupkg()
             {
-                Nuspec = new TestNuspecContext()
+                Nuspec = new TestNuspec()
                 {
                     Id = "a",
                     Version = "1.0"
                 }
             };
 
-            var testPackageB = new TestPackageContext()
+            var testPackageB = new TestNupkg()
             {
-                Nuspec = new TestNuspecContext()
+                Nuspec = new TestNuspec()
                 {
                     Id = "b",
                     Version = "2.0.0.0"
                 }
             };
 
-            var testPackageC1 = new TestPackageContext()
+            var testPackageC1 = new TestNupkg()
             {
-                Nuspec = new TestNuspecContext()
+                Nuspec = new TestNuspec()
                 {
                     Id = "c",
                     Version = "2.0.0-beta.1"
                 }
             };
 
-            var testPackageC2 = new TestPackageContext()
+            var testPackageC2 = new TestNupkg()
             {
-                Nuspec = new TestNuspecContext()
+                Nuspec = new TestNuspec()
                 {
                     Id = "c",
                     Version = "2.0.0-beta.2"
                 }
             };
 
-            var zipFileA = testPackageA.Create(workingDir);
-            var zipFileB = testPackageB.Create(workingDir);
-            var zipFileC1 = testPackageC1.Create(workingDir);
-            var zipFileC2 = testPackageC2.Create(workingDir);
+            var zipFileA = testPackageA.Save(workingDir);
+            var zipFileB = testPackageB.Save(workingDir);
+            var zipFileC1 = testPackageC1.Save(workingDir);
+            var zipFileC2 = testPackageC2.Save(workingDir);
             zipFileA.CopyTo(zipFileA.FullName.Replace(".nupkg", ".symbols.nupkg"));
             zipFileB.CopyTo(zipFileB.FullName.Replace(".nupkg", ".symbols.nupkg"));
         }

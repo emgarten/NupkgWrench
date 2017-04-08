@@ -49,7 +49,8 @@ namespace NupkgWrench
                         identity = reader.GetIdentity();
                     }
 
-                    var expectedName = $"{identity.Id}.{identity.Version.ToString()}.nupkg";
+                    var isSymbolsPackage = Util.IsSymbolPackage(nupkgPath);
+                    var expectedName = Util.GetNupkgName(identity, isSymbolsPackage);
                     var currentName = Path.GetFileName(nupkgPath);
 
                     var dir = Path.GetDirectoryName(nupkgPath);

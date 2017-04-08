@@ -422,5 +422,30 @@ namespace NupkgWrench
 
             return null;
         }
+
+        /// <summary>
+        /// Build the nupkg file name.
+        /// </summary>
+        public static string GetNupkgName(PackageIdentity identity, bool isSymbolPackage)
+        {
+            var name = $"{identity.Id}.{identity.Version.ToString()}";
+
+            if (isSymbolPackage)
+            {
+                name += ".symbols";
+            }
+
+            name += ".nupkg";
+
+            return name;
+        }
+
+        /// <summary>
+        /// True if the package ends with .symbols.nupkg
+        /// </summary>
+        public static bool IsSymbolPackage(string path)
+        {
+            return path?.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase) == true;
+        }
     }
 }

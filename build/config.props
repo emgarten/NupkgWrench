@@ -7,7 +7,7 @@
     <TestSDKVersion>15.0.0</TestSDKVersion>
     <FluentAssertionsVersion>4.19.0</FluentAssertionsVersion>
     <SourceLinkVersion>2.0.2</SourceLinkVersion>
-	<NuGetTestHelpersVersion>1.0.0</NuGetTestHelpersVersion>
+	<NuGetTestHelpersVersion>1.1.0-beta.3</NuGetTestHelpersVersion>
 	<CommandLineUtilsVersion>1.1.0</CommandLineUtilsVersion>
 	<FileSystemGlobbingVersion>1.1.0</FileSystemGlobbingVersion>
   </PropertyGroup>

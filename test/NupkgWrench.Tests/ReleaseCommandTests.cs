@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Test.Helpers;
 using NuGet.Versioning;
 using Xunit;
 
@@ -17,9 +18,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0"
@@ -37,45 +38,45 @@ namespace NupkgWrench.Tests
                 testPackageA.Nuspec.Dependencies.Add(depGroup1);
                 testPackageA.Nuspec.Dependencies.Add(depGroup2);
 
-                var testPackageB1 = new TestPackageContext()
+                var testPackageB1 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "1.0.0"
                     }
                 };
 
-                var testPackageB2 = new TestPackageContext()
+                var testPackageB2 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "2.0.0"
                     }
                 };
 
-                var testPackageB3 = new TestPackageContext()
+                var testPackageB3 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "0.1.0"
                     }
                 };
 
-                var testPackageB4 = new TestPackageContext()
+                var testPackageB4 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "9.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB1 = testPackageB1.Create(workingDir.Root);
-                var zipFileB2 = testPackageB2.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB1 = testPackageB1.Save(workingDir.Root);
+                var zipFileB2 = testPackageB2.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -100,9 +101,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -115,36 +116,36 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB1 = new TestPackageContext()
+                var testPackageB1 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var testPackageB2 = new TestPackageContext()
+                var testPackageB2 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "7.0.0"
                     }
                 };
 
-                var testPackageB3 = new TestPackageContext()
+                var testPackageB3 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "1.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB1 = testPackageB1.Create(workingDir.Root);
-                var zipFileB2 = testPackageB2.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB1 = testPackageB1.Save(workingDir.Root);
+                var zipFileB2 = testPackageB2.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -168,9 +169,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -183,17 +184,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "7.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -217,9 +218,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -232,17 +233,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "1.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -266,9 +267,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -281,17 +282,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "1.5.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -315,9 +316,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -330,17 +331,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -366,9 +367,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -381,17 +382,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -415,9 +416,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -430,17 +431,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -464,9 +465,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -479,17 +480,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -513,9 +514,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "6.0.0"
@@ -528,17 +529,17 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "6.0.0"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -562,9 +563,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0-beta.1.2"
@@ -578,27 +579,27 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "2.0.0-alpha"
                     }
                 };
 
-                var testPackageC = new TestPackageContext()
+                var testPackageC = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "c",
                         Version = "1.0.0-beta"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
-                var zipFileC = testPackageC.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
+                var zipFileC = testPackageC.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -626,9 +627,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0-beta.1.2"
@@ -642,27 +643,27 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "2.0.0-alpha"
                     }
                 };
 
-                var testPackageC = new TestPackageContext()
+                var testPackageC = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "c",
                         Version = "1.0.0-beta"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
-                var zipFileC = testPackageC.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
+                var zipFileC = testPackageC.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -690,9 +691,9 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA = new TestPackageContext()
+                var testPackageA = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0-beta.1.2"
@@ -706,27 +707,27 @@ namespace NupkgWrench.Tests
 
                 testPackageA.Nuspec.Dependencies.Add(depGroup);
 
-                var testPackageB = new TestPackageContext()
+                var testPackageB = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "b",
                         Version = "2.0.0-alpha"
                     }
                 };
 
-                var testPackageC = new TestPackageContext()
+                var testPackageC = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "c",
                         Version = "1.0.0-beta"
                     }
                 };
 
-                var zipFileA = testPackageA.Create(workingDir.Root);
-                var zipFileB = testPackageB.Create(workingDir.Root);
-                var zipFileC = testPackageC.Create(workingDir.Root);
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
+                var zipFileC = testPackageC.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -754,26 +755,26 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA1 = new TestPackageContext()
+                var testPackageA1 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0"
                     }
                 };
 
-                var testPackageA2 = new TestPackageContext()
+                var testPackageA2 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "2.0.0"
                     }
                 };
 
-                var zipFileA1 = testPackageA1.Create(workingDir.Root);
-                var zipFileA2 = testPackageA2.Create(workingDir.Root);
+                var zipFileA1 = testPackageA1.Save(workingDir.Root);
+                var zipFileA2 = testPackageA2.Save(workingDir.Root);
 
                 var log = new TestLogger();
 
@@ -792,16 +793,16 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 // Arrange
-                var testPackageA1 = new TestPackageContext()
+                var testPackageA1 = new TestNupkg()
                 {
-                    Nuspec = new TestNuspecContext()
+                    Nuspec = new TestNuspec()
                     {
                         Id = "a",
                         Version = "1.0.0"
                     }
                 };
 
-                var zipFileA1 = testPackageA1.Create(workingDir.Root);
+                var zipFileA1 = testPackageA1.Save(workingDir.Root);
 
                 var symbolsPath = zipFileA1.FullName.Replace(".nupkg", ".symbols.nupkg");
                 File.Copy(zipFileA1.FullName, symbolsPath);

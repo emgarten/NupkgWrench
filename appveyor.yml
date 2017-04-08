@@ -1,6 +1,6 @@
-version: '1.1.1-ci.{build}'
+version: '0.1.0-ci.{build}'
 init:
-  - git config --global core.autocrlf true
+  - git config --global core.autocrlf input
 branches:
   only:
     - master
@@ -8,22 +8,3 @@ build_script:
   - build.cmd
 clone_depth: 1
 test: off
-artifacts:
-  - path: 'artifacts\*.nupkg'
-    name: nupkg
-
-  - path: 'artifacts\NupkgWrench.exe'
-    name: exe
-
-  - path: 'artifacts\*.tar.bz2'
-    name: xplat
-deploy:
-  provider: NuGet
-  server: https://www.myget.org/F/nupkgwrench/api/v2/package
-  api_key:
-    secure: xap/w8Pi8ZkgpAwE0ofkKjtO8NTzeK0Gwm4LUPwRb+crbXkLInOfoapPE/fZXHvz
-  skip_symbols: false
-  symbol_server: https://www.myget.org/F/nupkgwrench/symbols/api/v2/package
-  artifact: /.*\.nupkg/
-  on:
-    branch: master

@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.FileSystemGlobbing;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -364,7 +365,7 @@ namespace NupkgWrench
             var globbingHit = false;
 
             // Skip the root, it was handled above
-            for (int i=0; i < parts.Length; i++)
+            for (var i = 0; i < parts.Length; i++)
             {
                 if (globbingHit || IsGlobbingPattern(parts[i]))
                 {
@@ -446,6 +447,84 @@ namespace NupkgWrench
         public static bool IsSymbolPackage(string path)
         {
             return path?.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        public static void AddFrameworkAssemblyReferences(XDocument nuspecXml, HashSet<string> assemblyNames, HashSet<NuGetFramework> frameworks)
+        {
+            // Read nuspec
+            var metadata = Util.GetMetadataElement(nuspecXml);
+            var ns = metadata.Name.NamespaceName;
+
+            var assembliesRoot = metadata.Elements()
+                                            .Where(e => e.Name.LocalName.Equals("frameworkAssemblies", StringComparison.OrdinalIgnoreCase))
+                                            .FirstOrDefault();
+
+            if (assembliesRoot == null)
+            {
+                assembliesRoot = new XElement(XName.Get("frameworkAssemblies", ns));
+                metadata.Add(assembliesRoot);
+            }
+
+            foreach (var assemblyName in assemblyNames)
+            {
+                AddFrameworkAssemblyReference(frameworks, assembliesRoot, assemblyName);
+            }
+        }
+
+        public static void AddFrameworkAssemblyReference(HashSet<NuGetFramework> frameworks, XElement assembliesRoot, string assemblyName)
+        {
+            var ns = assembliesRoot.Name.NamespaceName;
+
+            var assemblyElement = GetAssemblyElement(assembliesRoot, assemblyName);
+
+            if (assemblyElement == null)
+            {
+                assemblyElement = new XElement(XName.Get("frameworkAssembly", ns), new XAttribute("assemblyName", assemblyName));
+                assembliesRoot.Add(assemblyElement);
+            }
+
+            var tfmAttribute = assemblyElement.Attributes().FirstOrDefault(e => e.Name.LocalName.Equals("targetFramework", StringComparison.OrdinalIgnoreCase));
+
+            if (tfmAttribute == null)
+            {
+                tfmAttribute = new XAttribute(XName.Get("targetFramework"), string.Empty);
+                assemblyElement.Add(tfmAttribute);
+            }
+
+            // Get existing frameworks
+            var currentFrameworks = new HashSet<NuGetFramework>(tfmAttribute.Value.Split(',')
+                                                        .Select(e => e.Trim())
+                                                        .Where(e => !string.IsNullOrEmpty(e))
+                                                        .Select(NuGetFramework.Parse));
+
+            // Add input frameworks
+            if (frameworks.Any())
+            {
+                currentFrameworks.UnionWith(frameworks);
+
+                tfmAttribute.SetValue(string.Join(",", currentFrameworks.Select(e => e.GetShortFolderName())));
+            }
+            else
+            {
+                tfmAttribute.Remove();
+            }
+        }
+
+        public static XElement GetAssemblyElement(XElement assembliesRoot, string assemblyName)
+        {
+            XElement assemblyElement = null;
+
+            foreach (var element in assembliesRoot.Elements())
+            {
+                var name = element.Attribute(XName.Get("assemblyName"));
+
+                if (StringComparer.OrdinalIgnoreCase.Equals(assemblyName, name?.Value))
+                {
+                    assemblyElement = element;
+                }
+            }
+
+            return assemblyElement;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace NupkgWrench
             AddFilesCommand.Register(parentCommand, log);
             RemoveFilesCommand.Register(parentCommand, log);
             EmptyFolderCommand.Register(parentCommand, log);
+            CopySymbolsCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

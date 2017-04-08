@@ -237,7 +237,7 @@ namespace NupkgWrench
             return results;
         }
 
-        private static Dictionary<string, PackageIdentity> GetPathToIdentity(SortedSet<string> paths)
+        public static Dictionary<string, PackageIdentity> GetPathToIdentity(SortedSet<string> paths)
         {
             var mappings = new Dictionary<string, PackageIdentity>(StringComparer.Ordinal);
 
@@ -525,6 +525,21 @@ namespace NupkgWrench
             }
 
             return assemblyElement;
+        }
+
+        /// <summary>
+        /// /usr/home/blah.txt -> /usr/home/blah
+        /// </summary>
+        public static string RemoveFileExtensionFromPath(string path)
+        {
+            var ext = Path.GetExtension(path);
+
+            if (path.Length > ext.Length)
+            {
+                return path.Substring(0, path.Length - ext.Length);
+            }
+
+            return path;
         }
     }
 }

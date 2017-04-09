@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common\common.props" />
 
   <PropertyGroup Condition=" '$(IsXPlat)' != 'true' ">
@@ -44,7 +44,6 @@
 
     <ItemGroup>
       <PublishFiles Include="$(PublishToolInputDirectory)$(AssemblyName).dll" />
-      <PublishFiles Include="$(PublishToolInputDirectory)$(AssemblyName).runtimeconfig.json" />
     </ItemGroup>
 
     <Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(PublishToolDirectory)" />
@@ -66,27 +65,8 @@
     <Error Condition=" '$(IsXPlat)' != 'true' AND '$(MergedExePathExists)' != 'true' " Text="Missing $(MergedExePath)" />
 
     <!-- Pack NupkgWrench with NupkgWrench.exe -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Pack"
-			 Condition=" '$(IsXPlat)' != 'true' "
-             Properties="Configuration=$(Configuration);
-                         PackageOutputPath=$(NupkgOutputDirectory);
-                         NoPackageAnalysis=true;
-                         IncludeSymbols=false;
-                         IsTool=true;
-                         NuspecFile=NupkgWrench.nuspec;
-                         NuspecProperties=$(NuspecProperties)">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(IsXPlat)' != 'true' " Properties="Configuration=$(Configuration);&#xD;&#xA;                         PackageOutputPath=$(NupkgOutputDirectory);&#xD;&#xA;                         NoPackageAnalysis=true;&#xD;&#xA;                         IncludeSymbols=false;&#xD;&#xA;                         IsTool=true;&#xD;&#xA;                         NuspecFile=NupkgWrench.nuspec;&#xD;&#xA;                         NuspecProperties=$(NuspecProperties)">
     </MSBuild>
 
-    <!-- Pack NupkgWrenchDotnetTool with dotnet-NupkgWrench.dll -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Pack"
-             Properties="Configuration=$(Configuration);
-             PackageOutputPath=$(NupkgOutputDirectory);
-             NoPackageAnalysis=true;
-             IncludeSymbols=false;
-             NuspecFile=NupkgWrenchDotnetTool.nuspec;
-             NuspecProperties=$(NuspecProperties)">
-    </MSBuild>
   </Target>
 </Project>

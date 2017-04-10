@@ -52,7 +52,7 @@
 
   <!--
     ============================================================
-    Create NupkgWrench and NupkgWrenchDotnetTool
+    Create NupkgWrench
     ============================================================
   -->
   <Target Name="PackProjects">

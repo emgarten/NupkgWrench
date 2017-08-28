@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -428,7 +429,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(1, files.Count);
+                files.Count.Should().Be(1);
                 Assert.Equal("a.1.0.0-beta.2.2.nupkg", files[0]);
             }
         }
@@ -481,7 +482,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(0, files.Count);
+                files.Should().BeEmpty();
             }
         }
 
@@ -498,7 +499,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(0, log.Messages.Count);
+                log.Messages.Should().BeEmpty();
             }
         }
 
@@ -550,7 +551,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(2, files.Count);
+                files.Count.Should().Be(2);
                 Assert.Equal("a.1.0.0-beta.2.2.nupkg", files[0]);
                 Assert.Equal("b.1.0.0-beta.1.2.nupkg", files[1]);
             }
@@ -779,10 +780,10 @@ namespace NupkgWrench.Tests
                 // Assert
                 Assert.Equal(0, exitCode);
                 Assert.Equal("none", nuspec.GetContentFiles().Single().BuildAction);
-                Assert.Equal(true, nuspec.GetContentFiles().Single().CopyToOutput);
+                Assert.True(nuspec.GetContentFiles().Single().CopyToOutput);
                 Assert.Equal("**/*.txt", nuspec.GetContentFiles().Single().Exclude);
                 Assert.Equal("**/*.*", nuspec.GetContentFiles().Single().Include);
-                Assert.Equal(true, nuspec.GetContentFiles().Single().Flatten);
+                Assert.True(nuspec.GetContentFiles().Single().Flatten);
             }
         }
 
@@ -854,7 +855,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(0, nuspec.GetDependencyGroups().Count());
+                nuspec.GetDependencyGroups().Should().BeEmpty();
             }
         }
 
@@ -896,7 +897,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(1, nuspec.GetDependencyGroups().Count());
+                nuspec.GetDependencyGroups().Count().Should().Be(1);
             }
         }
 
@@ -939,8 +940,8 @@ namespace NupkgWrench.Tests
                 // Assert
                 Assert.Equal(0, exitCode);
                 Assert.Equal(2, nuspec.GetDependencyGroups().Count());
-                Assert.Equal(0, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net45"))).Single().Packages.Count());
-                Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))).Single().Packages.Count());
+                nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net45"))).Single().Packages.Should().BeEmpty();
+                nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))).Single().Packages.Count().Should().Be(2);
             }
         }
 
@@ -985,7 +986,7 @@ namespace NupkgWrench.Tests
                 Assert.Equal(3, nuspec.GetDependencyGroups().Count());
                 Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("net45"))).Single().Packages.Count());
                 Assert.Equal(2, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6"))).Single().Packages.Count());
-                Assert.Equal(0, nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("win8"))).Single().Packages.Count());
+                nuspec.GetDependencyGroups().Where(e => e.TargetFramework.Equals(NuGetFramework.Parse("win8"))).Single().Packages.Should().BeEmpty();
             }
         }
 
@@ -1016,7 +1017,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 Assert.Equal(0, exitCode);
-                Assert.Equal(0, nuspec.GetFrameworkReferenceGroups().Count());
+                nuspec.GetFrameworkReferenceGroups().Should().BeEmpty();
             }
         }
 

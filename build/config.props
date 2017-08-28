@@ -1,15 +1,17 @@
 ﻿<Project ToolsVersion="15.0">
   <!-- Dependency versions -->
   <PropertyGroup>
-    <NuGetPackageVersion>4.0.0</NuGetPackageVersion>
+    <NuGetPackageVersion>4.3.0</NuGetPackageVersion>
     <XunitVersion>2.2.0</XunitVersion>
     <XunitRunnerVisualStudioVersion>$(XunitVersion)</XunitRunnerVisualStudioVersion>
+    <XunitAnalyzersVersion>0.6.0</XunitAnalyzersVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
-    <FluentAssertionsVersion>4.19.0</FluentAssertionsVersion>
-    <SourceLinkVersion>2.0.2</SourceLinkVersion>
-	<NuGetTestHelpersVersion>1.1.0-beta.3</NuGetTestHelpersVersion>
-	<CommandLineUtilsVersion>1.1.0</CommandLineUtilsVersion>
-	<FileSystemGlobbingVersion>1.1.0</FileSystemGlobbingVersion>
+    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
+    <SourceLinkVersion>2.2.0</SourceLinkVersion>
+    <NuGetTestHelpersVersion>1.1.0</NuGetTestHelpersVersion>
+    <!-- Update tehse in NupkgWrench.nuspec also -->
+    <CommandLineUtilsVersion>1.1.1</CommandLineUtilsVersion>
+    <FileSystemGlobbingVersion>1.1.1</FileSystemGlobbingVersion>
   </PropertyGroup>
   
   <!-- Config -->
@@ -27,5 +29,6 @@
     <PackageTags>nupkg;nuget-powertool</PackageTags>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
     <Copyright>Copyright © 2017 Justin Emgarten</Copyright>
+    <PackageIconUrl>https://emgartenstatic.blob.core.windows.net/nupkgs/icons/nupkgwrench.png</PackageIconUrl>
   </PropertyGroup>
 </Project>

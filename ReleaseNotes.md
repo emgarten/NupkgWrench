@@ -1,5 +1,7 @@
 # Release Notes
 
+## 1.4.0
+
 ## 1.3.0
 * netcoreapp2.0 support
 * Fixed exit codes for invalid arguments

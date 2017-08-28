@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -42,9 +42,12 @@ namespace NupkgWrench
 
             var assemblyVersion = NuGetVersion.Parse(typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
 
-            var app = new CommandLineApplication();
-            app.Name = "NupkgWrench";
-            app.FullName = "nupkg wrench";
+            var app = new CommandLineApplication
+            {
+                Name = "NupkgWrench",
+                FullName = "nupkg wrench"
+            };
+
             app.HelpOption(Constants.HelpOption);
             app.VersionOption("--version", assemblyVersion.ToNormalizedString());
 
@@ -62,11 +65,10 @@ namespace NupkgWrench
             app.OnExecute(() =>
             {
                 app.ShowHelp();
-
-                return 0;
+                return 1;
             });
 
-            var exitCode = 0;
+            var exitCode = 1;
 
             try
             {
@@ -78,8 +80,6 @@ namespace NupkgWrench
             }
             catch (AggregateException ex)
             {
-                exitCode = 1;
-
                 foreach (var inner in ex.InnerExceptions)
                 {
                     log.LogError(inner.Message);
@@ -88,7 +88,6 @@ namespace NupkgWrench
             }
             catch (Exception ex)
             {
-                exitCode = 1;
                 log.LogError(ex.Message);
                 log.LogDebug(ex.ToString());
             }

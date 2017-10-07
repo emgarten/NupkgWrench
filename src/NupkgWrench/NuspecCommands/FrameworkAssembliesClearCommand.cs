@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Linq;
-using Microsoft.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Packaging;
 

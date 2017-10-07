@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Versioning;
 
@@ -15,7 +15,7 @@ namespace NupkgWrench
         {
             var logLevel = LogLevel.Information;
 
-            if (Environment.GetEnvironmentVariable("NUPKGWRENCH_DEBUG") == "1")
+            if (CmdUtils.IsDebugModeEnabled())
             {
                 logLevel = LogLevel.Debug;
             }
@@ -28,28 +28,16 @@ namespace NupkgWrench
 
         public static Task<int> MainCore(string[] args, ILogger log)
         {
-#if DEBUG
-            if (args.Contains("--debug"))
-            {
-                args = args.Skip(1).ToArray();
-                while (!Debugger.IsAttached)
-                {
-                }
-
-                Debugger.Break();
-            }
-#endif
-
-            var assemblyVersion = NuGetVersion.Parse(typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+            CmdUtils.LaunchDebuggerIfSet(ref args, log);
 
             var app = new CommandLineApplication
             {
                 Name = "NupkgWrench",
-                FullName = "nupkg wrench"
+                FullName = "nupkg wrench",
+                Description = "A powertool for modifying nupkg files."
             };
-
             app.HelpOption(Constants.HelpOption);
-            app.VersionOption("--version", assemblyVersion.ToNormalizedString());
+            app.VersionOption("--version", (new NuGetVersion(CmdUtils.GetAssemblyVersion())).ToNormalizedString());
 
             NuspecCommand.Register(app, log);
             FilesCommand.Register(app, log);
@@ -78,18 +66,9 @@ namespace NupkgWrench
             {
                 ex.Command.ShowHelp();
             }
-            catch (AggregateException ex)
-            {
-                foreach (var inner in ex.InnerExceptions)
-                {
-                    log.LogError(inner.Message);
-                    log.LogDebug(inner.ToString());
-                }
-            }
             catch (Exception ex)
             {
-                log.LogError(ex.Message);
-                log.LogDebug(ex.ToString());
+                ExceptionUtils.LogException(ex, log);
             }
 
             return Task.FromResult(exitCode);

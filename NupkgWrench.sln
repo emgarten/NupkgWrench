@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.27004.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2702F9C7-2ABC-4DD8-B4CE-8C158CAFED96}"
 EndProject
@@ -10,6 +10,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NupkgWrench", "src\NupkgWrench\NupkgWrench.csproj", "{DE5A9B69-22F4-4D0A-96AB-0CB0D2F14240}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NupkgWrench.Tests", "test\NupkgWrench.Tests\NupkgWrench.Tests.csproj", "{226D8D15-A7D0-4356-AD38-E524E3518D73}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{693BF4D7-5CA1-46D5-AF45-321D4E96872A}"
+	ProjectSection(SolutionItems) = preProject
+		build\config.props = build\config.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,5 +57,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{DE5A9B69-22F4-4D0A-96AB-0CB0D2F14240} = {2702F9C7-2ABC-4DD8-B4CE-8C158CAFED96}
 		{226D8D15-A7D0-4356-AD38-E524E3518D73} = {390B9F71-125E-4391-85D1-9FC9F78F0661}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0D39866-B8AA-4775-81E2-51A3A1E5A85A}
 	EndGlobalSection
 EndGlobal

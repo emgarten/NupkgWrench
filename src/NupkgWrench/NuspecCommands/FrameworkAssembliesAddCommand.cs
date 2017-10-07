@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -42,8 +42,8 @@ namespace NupkgWrench
                 try
                 {
                     // Validate required parameters
-                    ValidateCmdOptionsUtil.VerifyRequiredOptions(assemblyNames);
-                    ValidateCmdOptionsUtil.VerifyMutallyExclusiveOptions(targetFrameworks, noFrameworks);
+                    CmdUtils.VerifyRequiredOptions(assemblyNames);
+                    CmdUtils.VerifyMutallyExclusiveOptions(targetFrameworks, noFrameworks);
 
                     var inputs = argRoot.Values;
 

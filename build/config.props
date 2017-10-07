@@ -1,11 +1,10 @@
-﻿<Project ToolsVersion="15.0">
+<Project ToolsVersion="15.0">
   <!-- Dependency versions -->
   <PropertyGroup>
     <NuGetPackageVersion>4.3.0</NuGetPackageVersion>
     <NuGetTestHelpersVersion>1.1.0</NuGetTestHelpersVersion>
-    <!-- Update these in NupkgWrench.nuspec also -->
-    <CommandLineUtilsVersion>1.1.1</CommandLineUtilsVersion>
-    <FileSystemGlobbingVersion>1.1.1</FileSystemGlobbingVersion>
+    <CommandLineUtilsVersion>2.0.0</CommandLineUtilsVersion>
+    <FileSystemGlobbingVersion>2.0.0</FileSystemGlobbingVersion>
   </PropertyGroup>
   
   <!-- Config -->

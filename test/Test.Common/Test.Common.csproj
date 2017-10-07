@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Test.Helpers" Version="$(NuGetTestHelpersVersion)" />
+    <PackageReference Include="Xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)\common.targets" />
+</Project>

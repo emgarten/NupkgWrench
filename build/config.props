@@ -2,14 +2,8 @@
   <!-- Dependency versions -->
   <PropertyGroup>
     <NuGetPackageVersion>4.3.0</NuGetPackageVersion>
-    <XunitVersion>2.2.0</XunitVersion>
-    <XunitRunnerVisualStudioVersion>$(XunitVersion)</XunitRunnerVisualStudioVersion>
-    <XunitAnalyzersVersion>0.6.0</XunitAnalyzersVersion>
-    <TestSDKVersion>15.0.0</TestSDKVersion>
-    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-    <SourceLinkVersion>2.2.0</SourceLinkVersion>
     <NuGetTestHelpersVersion>1.1.0</NuGetTestHelpersVersion>
-    <!-- Update tehse in NupkgWrench.nuspec also -->
+    <!-- Update these in NupkgWrench.nuspec also -->
     <CommandLineUtilsVersion>1.1.1</CommandLineUtilsVersion>
     <FileSystemGlobbingVersion>1.1.1</FileSystemGlobbingVersion>
   </PropertyGroup>

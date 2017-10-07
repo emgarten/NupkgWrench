@@ -28,6 +28,16 @@
     </Otherwise>
   </Choose>
   
+  <!-- Default package versions -->
+  <PropertyGroup>
+    <FluentAssertionsVersion Condition=" '$(FluentAssertionsVersion)' == '' ">4.19.4</FluentAssertionsVersion>
+    <ToStringWithoutOverrideAnalyzerVersion Condition=" '$(ToStringWithoutOverrideAnalyzerVersion)' == '' ">0.5.0</ToStringWithoutOverrideAnalyzerVersion>
+    <TestSDKVersion Condition=" '$(TestSDKVersion)' == '' ">15.0.0</TestSDKVersion>
+    <XunitVersion Condition=" '$(XunitVersion)' == '' ">2.3.0</XunitVersion>
+    <XunitRunnerVisualStudioVersion Condition=" '$(XunitRunnerVisualStudioVersion)' == '' ">$(XunitVersion)</XunitRunnerVisualStudioVersion>
+    <SourceLinkVersion Condition=" '$(SourceLinkVersion)' == '' ">2.2.1</SourceLinkVersion>
+  </PropertyGroup>
+  
   <!-- Verify that the framework was identified above -->
   <Target Name="VerifyTargetFrameworkPlatform" BeforeTargets="Build;Rebuild" Condition=" '$(IsFrameworkInvalid)' == 'true' ">
     <Error Message="Unknown target framework: $(TargetFramework), update build scripts." />
@@ -75,7 +85,10 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersVersion)" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TestProject)' != 'true' ">
+    <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="$(ToStringWithoutOverrideAnalyzerVersion)" PrivateAssets="all" />
   </ItemGroup>
   
   <!-- Sign -->

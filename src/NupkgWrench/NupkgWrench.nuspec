@@ -7,6 +7,7 @@
     <owners>emgarten</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/emgarten/NupkgWrench/</projectUrl>
     <description>NupkgWrench is a command line tool to read and modify nupkgs.</description>
     <copyright>Copyright © 2017 Justin Emgarten</copyright>
     <tags>nupkg nuget-powertool</tags>

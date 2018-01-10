@@ -39,5 +39,22 @@ namespace NupkgWrench.CmdExe.Tests
                 result.Errors.Should().BeNullOrEmpty();
             }
         }
+
+        [WindowsFact]
+        public async Task RunModifyNuspecVerifySuccess()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var testNupkg = new TestNupkg("a", "1.0.0");
+                TestNupkg.Create(workingDir.Root);
+
+                var args = "nuspec dependencies clear";
+
+                var result = await CmdRunner.RunAsync(ExeUtils.NupkgWrenchExePath, workingDir, args);
+
+                result.Success.Should().BeTrue();
+                result.Errors.Should().BeNullOrEmpty();
+            }
+        }
     }
 }

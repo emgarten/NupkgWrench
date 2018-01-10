@@ -1098,5 +1098,96 @@ namespace NupkgWrench.Tests
 
             return files;
         }
+
+        [Fact]
+        public async Task Command_DependenciesEditCommand()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg
+                {
+                    Nuspec = new TestNuspec
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var depGroup1 = new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                var depGroup2 = new PackageDependencyGroup(NuGetFramework.Parse("netstandard1.6"), new[] {
+                    new PackageDependency("b", VersionRange.Parse("2.0.0-alpha")),
+                    new PackageDependency("c", VersionRange.Parse("[1.0.0-beta]"))
+                });
+
+                testPackage.Nuspec.Dependencies.Add(depGroup1);
+                testPackage.Nuspec.Dependencies.Add(depGroup2);
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                const string id = "Common";
+                const string version = "0.1.1.1";
+
+                var packageDependency = new PackageDependency(id, VersionRange.Parse(version));
+
+                // Add
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "edit", zipFile.FullName, "-t", "add", "-i", id, "-v", version }, log);
+                var nuspec = GetNuspec(zipFile.FullName);
+                var dependencyGroups = nuspec.GetDependencyGroups().ToList();
+                var net45 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("net45"));
+                var standard16 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("netstandard1.6"));
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains(packageDependency, net45.Packages);
+                Assert.Contains(packageDependency, standard16.Packages);
+
+                //Remove
+                //Act
+                exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "edit", zipFile.FullName, "-t", "remove", "-i", id, "-v", version }, log);
+                nuspec = GetNuspec(zipFile.FullName);
+                dependencyGroups = nuspec.GetDependencyGroups().ToList();
+                net45 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("net45"));
+                standard16 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("netstandard1.6"));
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.DoesNotContain(packageDependency, net45.Packages);
+                Assert.DoesNotContain(packageDependency, standard16.Packages);
+
+                // Add only net45
+                // Act
+                exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "edit", zipFile.FullName, "-t", "add", "-i", id, "-v", version, "-f", "net45" }, log);
+                nuspec = GetNuspec(zipFile.FullName);
+                dependencyGroups = nuspec.GetDependencyGroups().ToList();
+                net45 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("net45"));
+                standard16 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("netstandard1.6"));
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Contains(packageDependency, net45.Packages);
+                Assert.DoesNotContain(packageDependency, standard16.Packages);
+
+                //Remove only net45
+                //Act
+                exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "edit", zipFile.FullName, "-t", "remove", "-i", id, "-v", version, "-f", "net45" }, log);
+                nuspec = GetNuspec(zipFile.FullName);
+                dependencyGroups = nuspec.GetDependencyGroups().ToList();
+                net45 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("net45"));
+                standard16 = dependencyGroups.First(g => g.TargetFramework == NuGetFramework.Parse("netstandard1.6"));
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.DoesNotContain(packageDependency, net45.Packages);
+                Assert.DoesNotContain(packageDependency, standard16.Packages);
+            }
+        }
     }
 }

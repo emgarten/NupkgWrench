@@ -11,6 +11,7 @@ namespace NupkgWrench
 
             DependenciesClearCommand.Register(parentCommand, log);
             DependenciesEmptyGroupCommand.Register(parentCommand, log);
+            DependenciesEditCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

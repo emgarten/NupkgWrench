@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace NupkgWrench
             var excludeSymbolsFilter = cmd.Option(Constants.ExcludeSymbolsTemplate, Constants.ExcludeSymbolsDesc, CommandOptionType.NoValue);
             var highestVersionFilter = cmd.Option(Constants.HighestVersionFilterTemplate, Constants.HighestVersionFilterDesc, CommandOptionType.NoValue);
 
-            var frameworkOption = cmd.Option("-f|--framework", "Group target frameworks. Use 'any' for the default group.", CommandOptionType.MultipleValue);
+            var frameworkOption = cmd.Option(Constants.FrameworkOptionTemplate, Constants.FrameworkOptionDesc, CommandOptionType.MultipleValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -142,25 +142,7 @@ namespace NupkgWrench
                         // Add empty groups for those remaining
                         foreach (var fw in frameworks)
                         {
-                            var groupNode = new XElement(XName.Get("group", ns));
-
-                            if (!fw.IsAny)
-                            {
-                                var version = fw.Version.ToString();
-
-                                if (version.EndsWith(".0.0"))
-                                {
-                                    version = version.Substring(0, version.Length - 4);
-                                }
-
-                                if (version.EndsWith(".0")
-                                 && version.IndexOf('.') != version.LastIndexOf('.'))
-                                {
-                                    version = version.Substring(0, version.Length - 2);
-                                }
-
-                                groupNode.Add(new XAttribute(XName.Get("targetFramework"), $"{fw.Framework}{version}"));
-                            }
+                            var groupNode = DependenciesUtil.CreateGroupNode(ns, fw);
 
                             dependenciesNode.Add(groupNode);
                         }

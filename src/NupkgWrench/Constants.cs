@@ -22,11 +22,16 @@ namespace NupkgWrench
         internal const string FrameworkOptionTemplate = "-f|--framework";
         internal const string FrameworkOptionDesc = "Group target frameworks. Use 'any' for the default group. If not specified all dependencies are processed.";
 
-        internal const string EditTypeTemplate = "-t|--type";
-        internal const string EditTypeDesc = "Edit type, such as (add/remove/modify).";
+        internal const string DependencyVersionRangeTemplate = "--dependency-version";
+        internal const string DependencyVersionRangeDesc = "Dependency version range.";
 
-        internal const string EditExcludeTemplate = "-x|--exclude";
-        internal const string EditExcludeDesc = "Edit dependency exclude attribute, example: Build,Analyzers.";
+        internal const string DependencyIdTemplate = "--dependency-id";
+        internal const string DependencyIdDesc = "Dependency id.";
 
+        internal const string DependencyExcludeAttributeTemplate = "--dependency-exclude";
+        internal const string DependencyExcludeAttributeDesc = "Dependency exclude attribute, example: Build,Analyzers.";
+
+        internal const string DependencyIncludeAttributeTemplate = "--dependency-include";
+        internal const string DependencyIncludeAttributeDesc = "Dependency include attribute, example: Build,Analyzers.";
     }
 }

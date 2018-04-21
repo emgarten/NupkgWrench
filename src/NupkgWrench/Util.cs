@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -422,6 +422,31 @@ namespace NupkgWrench
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get a nuspec file
+        /// </summary>
+        public static XDocument GetNuspec(string nupkgPath)
+        {
+            using (var packageReader = new PackageArchiveReader(nupkgPath))
+            {
+                return packageReader.NuspecReader.Xml;
+            }
+        }
+
+        /// <summary>
+        /// Replace a nuspec file
+        /// </summary>
+        public static void ReplaceNuspec(string nupkgPath, XDocument nuspecXml, ILogger log)
+        {
+            string nuspecPath;
+            using (var packageReader = new PackageArchiveReader(nupkgPath))
+            {
+                nuspecPath = packageReader.GetNuspecFile();
+            }
+
+            Util.AddOrReplaceZipEntry(nupkgPath, nuspecPath, nuspecXml, log);
         }
 
         /// <summary>

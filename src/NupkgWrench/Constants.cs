@@ -1,4 +1,4 @@
-﻿namespace NupkgWrench
+namespace NupkgWrench
 {
     internal class Constants
     {
@@ -18,5 +18,20 @@
 
         internal const string SinglePackageRootDesc = "Path to a package, directory containing, or a file globbing pattern that resolves to a single package (ex: path/**/*.nupkg).";
         internal const string MultiplePackagesRootDesc = "Paths to individual packages, directories containing packages, or file globbing patterns (ex: path/**/*.nupkg). Multiple values may be passed in.";
+
+        internal const string FrameworkOptionTemplate = "-f|--framework";
+        internal const string FrameworkOptionDesc = "Group target frameworks. Use 'any' for the default group. If not specified all dependencies are processed.";
+
+        internal const string DependencyVersionRangeTemplate = "--dependency-version";
+        internal const string DependencyVersionRangeDesc = "Dependency version range.";
+
+        internal const string DependencyIdTemplate = "--dependency-id";
+        internal const string DependencyIdDesc = "Dependency id.";
+
+        internal const string DependencyExcludeAttributeTemplate = "--dependency-exclude";
+        internal const string DependencyExcludeAttributeDesc = "Dependency exclude attribute, example: Build,Analyzers.";
+
+        internal const string DependencyIncludeAttributeTemplate = "--dependency-include";
+        internal const string DependencyIncludeAttributeDesc = "Dependency include attribute, example: Build,Analyzers.";
     }
 }

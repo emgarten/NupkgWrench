@@ -11,13 +11,13 @@
   -->
   <Target Name="PublishArtifacts"
           Condition=" '$(SkipPublishArtifacts)' != 'true' AND '$(IsXPlat)' != 'true' "
-          DependsOnTargets="Build"
+          DependsOnTargets="Build;Publish"
           BeforeTargets="Pack">
 
     <PropertyGroup>
       <MergeFile>NupkgWrench.exe</MergeFile>
       <ILRepackExePath>$(PackagesConfigDirectory)ILRepack.2.0.12\tools\ILRepack.exe</ILRepackExePath>
-      <MergeDirectory>$(ArtifactsDirectory)proj\NupkgWrench\bin\$(Configuration)\net461\win7-x64\</MergeDirectory>
+      <MergeDirectory>$(ArtifactsDirectory)proj\NupkgWrench\bin\$(Configuration)\net461\</MergeDirectory>
       <MergeMainAssembly>$(MergeDirectory)$(MergeFile)</MergeMainAssembly>
       <MergeOutputPath>$(PublishOutputDirectory)$(MergeFile)</MergeOutputPath>
       <MergeJsonNetDir>$(PackagesConfigDirectory)Newtonsoft.Json.6.0.8\lib\net45</MergeJsonNetDir>
@@ -28,7 +28,7 @@
 
     <!-- Build command -->
     <PropertyGroup>
-      <MergeExeCommand>$(ILRepackExePath) $(MergeMainAssembly) $(MergeDirectory)*.Extensions.*.dll $(MergeDirectory)Newtonsoft.Json.dll $(MergeDirectory)NuGet.*.dll  $(MergeDirectory)System.IO.Compression.dll /lib:$(MergeDirectory) /lib:$(MergeJsonNetDir) /out:$(MergeOutputPath) /log:$(MergeLogPath) /parallel /wildcards /internalize</MergeExeCommand>
+      <MergeExeCommand>$(ILRepackExePath) $(MergeMainAssembly) $(MergeDirectory)*.dll /lib:$(MergeDirectory) /lib:$(MergeJsonNetDir) /out:$(MergeOutputPath) /log:$(MergeLogPath) /parallel /wildcards /internalize</MergeExeCommand>
       <MergeExeCommand Condition=" '$(SignKeyPath)' != '' ">$(MergeExeCommand) /keyfile:$(SignKeyPath)</MergeExeCommand>
     </PropertyGroup>
 

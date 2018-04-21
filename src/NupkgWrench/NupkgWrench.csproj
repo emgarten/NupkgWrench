@@ -1,10 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project ToolsVersion="15.0">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup Condition=" '$(IsXPlat)' != 'true' ">
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
-    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(IsXPlat)' == 'true' ">
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
@@ -13,6 +12,9 @@
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
     <AssemblyName>NupkgWrench</AssemblyName>
     <OutputType>Exe</OutputType>
+    <ToolCommandName>nupkgwrench</ToolCommandName>
+    <PackProject>true</PackProject>
+    <PublishProject>true</PublishProject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackageVersion)" />
@@ -32,29 +34,6 @@
   
   <!--
     ============================================================
-    Copy dotnet-nupkgwrench assemblies, these are used by the nuspec later
-    ============================================================
-  -->
-  <Target Name="PublishToolFolder" BeforeTargets="PackProjects" DependsOnTargets="Build">
-
-    <PropertyGroup>
-      <PublishToolDirectory>$(ArtifactsDirectory)dotnettoolassemblies\$(AssemblyName)\</PublishToolDirectory>
-      <PublishToolInputDirectory>$(ArtifactsDirectory)proj\$(AssemblyName)\bin\$(Configuration)\netcoreapp2.0\</PublishToolInputDirectory>
-      <PublishToolInputDirectory Condition=" '$(IsXPlat)' != 'true' ">$(PublishToolInputDirectory)win7-x64\</PublishToolInputDirectory>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(PublishToolDirectory)" />
-
-    <ItemGroup>
-      <PublishFiles Include="$(PublishToolInputDirectory)$(AssemblyName).dll" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(PublishFiles)" DestinationFolder="$(PublishToolDirectory)" />
-
-  </Target>
-
-  <!--
-    ============================================================
     Create NupkgWrench
     ============================================================
   -->
@@ -62,7 +41,7 @@
     <PropertyGroup>
       <MergedExePath>$(PublishOutputDirectory)$(AssemblyName).exe</MergedExePath>
       <MergedExePathExists Condition="Exists($(MergedExePath))">true</MergedExePathExists>
-      <NuspecProperties>version=$(Version);configuration=$(Configuration)</NuspecProperties>
+      <NuspecProperties>version=$(Version);configuration=$(Configuration);branch=$(RepositoryBranch);commit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
 
     <Error Condition=" '$(IsXPlat)' != 'true' AND '$(MergedExePathExists)' != 'true' " Text="Missing $(MergedExePath)" />
@@ -72,4 +51,5 @@
     </MSBuild>
 
   </Target>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

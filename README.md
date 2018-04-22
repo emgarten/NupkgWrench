@@ -48,12 +48,6 @@ The list of packages on this feed is [here](https://nuget.blob.core.windows.net/
 * Search folders for packages using wildcard patterns for ids and version, NupkgWrench handles non-normalized versions such as 1.0.01 where constructing the file name manually is error prone.
 * Validate nupkgs
 
-## Coding
-This solution uses .NET Core, get the tools [here](http://dot.net/).
-
-### License
-[MIT License](https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md)
-
 # Commands
 
 | Command            | Description |
@@ -67,6 +61,9 @@ This solution uses .NET Core, get the tools [here](http://dot.net/).
 | ``nuspec contentfiles add`` | Add a contentFiles entry in nuspec. |
 | ``nuspec dependencies clear`` | Clear all dependencies or a set of target framework group dependencies. |
 | ``nuspec dependencies emptygroup`` | Add empty dependency groups or remove dependencies from existing groups. |
+| ``nuspec dependencies add`` | Add a nuspec package dependency. |
+| ``nuspec dependencies remove`` | Remove a package dependency. |
+| ``nuspec dependencies modify`` | Modify a dependency or all package dependencies. Change the version, include, or exclude properties. |
 | ``nuspec edit`` | Modifies or adds a top level property to the nuspec in a package. |
 | ``nuspec frameworkassemblies clear`` | Clear all framework assemblies from a nuspec file. |
 | ``nuspec show`` | Display the XML contents of a nuspec file from a package. |
@@ -77,9 +74,11 @@ This solution uses .NET Core, get the tools [here](http://dot.net/).
 | ``validate`` | Verify a nupkg can be read using NuGet's package reader. |
 | ``version`` | Display the package version of a nupkg. |
 
-# Quick start
+# Contributing
 
-Download the latest release from [github](https://github.com/emgarten/NupkgWrench/releases/latest).
+Need a new command? Send a pull request! We're happy to accept new commands and fixes.
+
+# Quick start
 
 ### Inspecting a nupkg
 
@@ -180,4 +179,10 @@ Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
 ```
 > NupkgWrench files emptygroup c:\nupkgs --path lib/net45/_._
 > NupkgWrench nuspec dependencies emptygroup c:\nupkgs --framework net45
-```
+``` 
+
+## Coding
+This solution uses .NET Core, get the tools [here](http://dot.net/).
+
+### License
+[MIT License](https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md)

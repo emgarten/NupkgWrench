@@ -1,4 +1,4 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace NupkgWrench
@@ -11,6 +11,9 @@ namespace NupkgWrench
 
             DependenciesClearCommand.Register(parentCommand, log);
             DependenciesEmptyGroupCommand.Register(parentCommand, log);
+            DependenciesAddCommand.Register(parentCommand, log);
+            DependenciesModifyCommand.Register(parentCommand, log);
+            DependenciesRemoveCommand.Register(parentCommand, log);
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

@@ -1,19 +1,43 @@
-# NupkgWrench
+# What is NupkgWrench?
 
-NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs.
+NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs. 
 
-## Build Status
+The jump between automatically packing a csproj and building a nupkg from scratch is difficult. NupkgWrench lets you modify nupkgs, make simple changes such as add/remove files, or update dependencies without having to author every part of the package.
 
-| AppVeyor | Travis |
-| --- | --- |
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.org/emgarten/NupkgWrench.svg?branch=master)](https://travis-ci.org/emgarten/NupkgWrench) |
+NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/version. Incorporate NupkgWrench into your scripts to avoid casing and SemanticVersion problems such as 1.0.0 vs 1.0.0.0. NupkgWrench uses NuGet client libraries and handles packages in the same way as NuGet.exe.
 
 ## Getting NupkgWrench
 
-* [Github releases](https://github.com/emgarten/NupkgWrench/releases/latest)
-* [NuGet package](https://www.nuget.org/packages/NupkgWrench)
-* [Nightly nupkg on myget](https://www.myget.org/F/nupkgwrench/api/v2/package/NupkgWrench/)
-* [Nightly builds on appveyor](https://ci.appveyor.com/project/emgarten/nupkgwrench/build/artifacts)
+### Manually getting nupkgwrench.exe (Windows and Mono)
+1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
+1. Extract *tools/NupkgWrench.exe* to a local folder and run it.
+
+### NuGet.exe install
+1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
+1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
+
+### Install global tool (dotnet CLI >= 2.1.300-preview2)
+1. `dotnet tool install -g nupkgwrench`
+1. `nupkgwrench` should now be on your *PATH*
+
+### Manually run sleet.dll (dotnet CLI cross platform)
+1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
+1. Extract the nupkg to a local folder
+1. `dotnet <PathToNupkg>/tools/netcoreapp2.0/any/NupkgWrench.dll`
+
+## Build Status
+
+| AppVeyor | Travis | Visual Studio Online |
+| --- | --- | --- |
+| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.org/emgarten/NupkgWrench.svg?branch=master)](https://travis-ci.org/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
+
+## CI builds
+
+CI builds are located on the following NuGet feed:
+
+``https://nuget.blob.core.windows.net/packages/index.json``
+
+The list of packages on this feed is [here](https://nuget.blob.core.windows.net/packages/sleet.packageindex.json).
 
 ## Features
 * Change the version, release label, or convert packages from pre-release to stable across a folder of nupkgs. NupkgWrench will modify all dependency version ranges to match the new package versions.

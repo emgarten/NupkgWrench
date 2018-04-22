@@ -440,6 +440,9 @@ namespace NupkgWrench
         /// </summary>
         public static void ReplaceNuspec(string nupkgPath, XDocument nuspecXml, ILogger log)
         {
+            // Verify that the nuspec is valid
+            var nuspecReader = new NuspecReader(nuspecXml);
+
             string nuspecPath;
             using (var packageReader = new PackageArchiveReader(nupkgPath))
             {

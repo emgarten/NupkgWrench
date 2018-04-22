@@ -13,7 +13,7 @@ namespace NupkgWrench
     /// </summary>
     public static class DependenciesUtil
     {
-        public static void Process(XDocument nuspecXml, EditType verb, HashSet<NuGetFramework> frameworks, string id, string version, string exclude, string include, ILogger log)
+        public static void Process(XDocument nuspecXml, EditType verb, HashSet<NuGetFramework> frameworks, string id, string version, string exclude, string include, bool clearExclude, bool clearInclude, ILogger log)
         {
             var metadata = Util.GetMetadataElement(nuspecXml);
             var nameNamespaceName = metadata.Name.NamespaceName;
@@ -75,10 +75,10 @@ namespace NupkgWrench
                 }
             }
 
-            groups.ForEach(e => ProcessDependency(e, verb, id, version, exclude, include));
+            groups.ForEach(e => ProcessDependency(e, verb, id, version, exclude, include, clearExclude, clearInclude));
         }
 
-        public static void ProcessDependency(XElement dependencies, EditType type, string id, string version, string exclude, string include)
+        public static void ProcessDependency(XElement dependencies, EditType type, string id, string version, string exclude, string include, bool clearExclude, bool clearInclude)
         {
             var metadata = Util.GetMetadataElement(dependencies.Document);
             var nameNamespaceName = metadata.Name.NamespaceName;
@@ -93,68 +93,84 @@ namespace NupkgWrench
                 throw new ArgumentNullException(nameof(dependencies));
             }
 
-            var dependency = dependencies?.Elements(XName.Get("dependency", nameNamespaceName))
-                .FirstOrDefault(e => string.Equals(e.Attribute(idXName)?.Value, id, StringComparison.OrdinalIgnoreCase));
+            var toUpdate = new List<XElement>();
 
-            switch (type)
+            if (string.IsNullOrEmpty(id) && type == EditType.Modify)
             {
-                case EditType.Add:
-                case EditType.Modify:
-                    if (dependency != null)
-                    {
-                        dependency.SetAttributeValue(versionXName, version);
-                        if (exclude != null)
-                        {
-                            dependency.SetAttributeValue(excludeXName, exclude);
-                        }
-                        else
-                        {
-                            dependency.Attribute(excludeXName)
-                                ?.Remove();
-                        }
+                // Modify can run on all dependencies if no id was used
+                toUpdate.AddRange(dependencies.Elements());
+            }
+            else
+            {
+                var existing = dependencies?.Elements(XName.Get("dependency", nameNamespaceName))
+                    .FirstOrDefault(e => string.Equals(e.Attribute(idXName)?.Value, id, StringComparison.OrdinalIgnoreCase));
 
-                        if (include != null)
-                        {
-                            dependency.SetAttributeValue(includeXName, include);
-                        }
-                        else
-                        {
-                            dependency.Attribute(includeXName)
-                                ?.Remove();
-                        }
-                    }
-                    else if (dependencies != null)
-                    {
-                        dependency = new XElement(XName.Get("dependency", nameNamespaceName));
-                        dependency.SetAttributeValue(idXName, id);
-                        dependency.SetAttributeValue(versionXName, version);
-                        if (exclude != null)
-                        {
-                            dependency.SetAttributeValue(excludeXName, exclude);
-                        }
-                        if (include != null)
-                        {
-                            dependency.SetAttributeValue(includeXName, include);
-                        }
-                        dependencies.AddFirst(dependency);
-                    }
-                    break;
-                case EditType.Remove:
-                    dependency?.Remove();
-                    break;
-                case EditType.Clear:
-                    dependencies.Elements().ToList().ForEach(e => e.Remove());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                // This is expected to add null if it does not exist
+                toUpdate.Add(existing);
             }
 
-            if (dependencies != null)
+            foreach (var currentNode in toUpdate)
             {
-                // Remove empty any groups
-                if (!dependencies.Elements().Any() && dependencies.GetFramework().IsAny)
+                var dependency = currentNode;
+
+                if (type == EditType.Clear)
                 {
-                    dependencies.Remove();
+                    // Clear everything
+                    dependencies.Elements().ToList().ForEach(e => e.Remove());
+                    dependency = null;
+                }
+
+                if (dependency != null && (type == EditType.Add || type == EditType.Remove))
+                {
+                    // Remove the dependency
+                    dependency.Remove();
+                    dependency = null;
+                }
+
+                if (type == EditType.Add)
+                {
+                    // Add node
+                    dependency = new XElement(XName.Get("dependency", nameNamespaceName));
+                    dependency.SetAttributeValue(idXName, id);
+                    dependency.SetAttributeValue(versionXName, version);
+                    if (exclude != null)
+                    {
+                        dependency.SetAttributeValue(excludeXName, exclude);
+                    }
+                    if (include != null)
+                    {
+                        dependency.SetAttributeValue(includeXName, include);
+                    }
+                    dependencies.Add(dependency);
+                }
+
+                if (dependency != null && type == EditType.Modify)
+                {
+                    // Modify existing
+                    if (version != null)
+                    {
+                        dependency.SetAttributeValue(versionXName, version);
+                    }
+
+                    if (exclude != null)
+                    {
+                        dependency.SetAttributeValue(excludeXName, exclude);
+                    }
+                    else if (clearExclude)
+                    {
+                        dependency.Attribute(excludeXName)
+                            ?.Remove();
+                    }
+
+                    if (include != null)
+                    {
+                        dependency.SetAttributeValue(includeXName, include);
+                    }
+                    else if (clearInclude)
+                    {
+                        dependency.Attribute(includeXName)
+                            ?.Remove();
+                    }
                 }
             }
         }

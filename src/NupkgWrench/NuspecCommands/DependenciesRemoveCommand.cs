@@ -8,16 +8,16 @@ using NuGet.Frameworks;
 
 namespace NupkgWrench
 {
-    internal static class DependenciesAddCommand
+    internal static class DependenciesRemoveCommand
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("add", cmd => Run(cmd, log));
+            cmdApp.Command("remove", cmd => Run(cmd, log));
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
         {
-            cmd.Description = "Add package dependencies";
+            cmd.Description = "Remove package dependencies";
 
             // Filters
             var idFilter = cmd.Option(Constants.IdFilterTemplate, Constants.IdFilterDesc, CommandOptionType.SingleValue);
@@ -27,9 +27,6 @@ namespace NupkgWrench
 
             // Command options
             var frameworkOption = cmd.Option(Constants.FrameworkOptionTemplate, Constants.FrameworkOptionDesc, CommandOptionType.MultipleValue);
-            var editExclude = cmd.Option(Constants.DependencyExcludeAttributeTemplate, Constants.DependencyExcludeAttributeDesc, CommandOptionType.SingleValue);
-            var editInclude = cmd.Option(Constants.DependencyIncludeAttributeTemplate, Constants.DependencyIncludeAttributeDesc, CommandOptionType.SingleValue);
-            var dependencyVersionOption = cmd.Option(Constants.DependencyVersionRangeTemplate, Constants.DependencyVersionRangeDesc, CommandOptionType.SingleValue);
             var dependencyIdOption = cmd.Option(Constants.DependencyIdTemplate, Constants.DependencyIdDesc, CommandOptionType.SingleValue);
 
             var argRoot = cmd.Argument(
@@ -43,9 +40,6 @@ namespace NupkgWrench
             {
                 try
                 {
-                    // Validate parameters
-                    CmdUtils.VerifyRequiredOptions(dependencyIdOption, dependencyVersionOption);
-
                     var inputs = argRoot.Values;
 
                     if (inputs.Count < 1)
@@ -53,23 +47,34 @@ namespace NupkgWrench
                         inputs.Add(Directory.GetCurrentDirectory());
                     }
 
-                    var dependencyId = dependencyIdOption.Value();
+                    var dependencyId = dependencyIdOption.HasValue() ? dependencyIdOption.Value() : null;
+                    var type = dependencyIdOption.HasValue() ? DependenciesUtil.EditType.Remove : DependenciesUtil.EditType.Clear;
 
                     var editForFrameworks = new HashSet<NuGetFramework>();
                     if (frameworkOption.HasValue())
                     {
                         editForFrameworks.UnionWith(frameworkOption.Values.Select(NuGetFramework.Parse));
 
-                        log.LogInformation($"adding dependency {dependencyId} to {string.Join(", ", editForFrameworks.Select(e => e.GetShortFolderName()))}");
+                        if (type == DependenciesUtil.EditType.Clear)
+                        {
+                            log.LogInformation($"removing all dependencies from {string.Join(", ", editForFrameworks.Select(e => e.GetShortFolderName()))}");
+                        }
+                        else
+                        {
+                            log.LogInformation($"removing dependency {dependencyId} from {string.Join(", ", editForFrameworks.Select(e => e.GetShortFolderName()))}");
+                        }
                     }
                     else
                     {
-                        log.LogInformation($"adding dependency {dependencyId} to all frameworks");
+                        if (type == DependenciesUtil.EditType.Clear)
+                        {
+                            log.LogInformation($"removing all dependencies");
+                        }
+                        else
+                        {
+                            log.LogInformation($"removing dependency {dependencyId} from all frameworks");
+                        }
                     }
-
-                    var version = dependencyVersionOption.Value();
-                    var exclude = editExclude.HasValue() ? editExclude.Value() : null;
-                    var include = editInclude.HasValue() ? editInclude.Value() : null;
 
                     var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
@@ -79,7 +84,7 @@ namespace NupkgWrench
 
                         var nuspecXml = Util.GetNuspec(package);
 
-                        DependenciesUtil.Process(nuspecXml, DependenciesUtil.EditType.Add, editForFrameworks, dependencyId, version, exclude, include, false, false, log);
+                        DependenciesUtil.Process(nuspecXml, type, editForFrameworks, dependencyId, null, null, null, false, false, log);
 
                         Util.ReplaceNuspec(package, nuspecXml, log);
                     }

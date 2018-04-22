@@ -186,3 +186,7 @@ This solution uses .NET Core, get the tools [here](http://dot.net/).
 
 ### License
 [MIT License](https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md)
+
+# Related projects 
+
+NupkgWrench for VSTS/TFS [NupgkWrenchExtension](https://github.com/dschuermans/NupgkWrenchExtension)

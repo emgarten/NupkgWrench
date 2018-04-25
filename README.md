@@ -20,7 +20,7 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 1. `dotnet tool install -g nupkgwrench`
 1. `nupkgwrench` should now be on your *PATH*
 
-### Manually run sleet.dll (dotnet CLI cross platform)
+### Manually run nupkgwrench.dll (dotnet CLI cross platform)
 1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
 1. Extract the nupkg to a local folder
 1. `dotnet <PathToNupkg>/tools/netcoreapp2.0/any/NupkgWrench.dll`

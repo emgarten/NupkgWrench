@@ -23,7 +23,7 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 ### Manually run nupkgwrench.dll (dotnet CLI cross platform)
 1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
 1. Extract the nupkg to a local folder
-1. `dotnet <PathToNupkg>/tools/netcoreapp2.0/any/NupkgWrench.dll`
+1. `dotnet <PathToNupkg>/tools/netcoreapp2.1/any/NupkgWrench.dll`
 
 ## Build Status
 

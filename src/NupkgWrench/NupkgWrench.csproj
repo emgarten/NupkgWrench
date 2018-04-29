@@ -3,10 +3,10 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(IsXPlat)' == 'true' ">
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>

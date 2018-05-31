@@ -47,7 +47,7 @@ namespace NupkgWrench.CliTool.Tests
 
                 var version = nupkg.Nuspec.GetVersion().ToNormalizedString();
 
-                var result = await CmdRunner.RunAsync(dotnetExe, testContext.Root, $"tool install nupkgwrench --version {version} --source-feed {nupkgsFolder} --tool-path {dir}");
+                var result = await CmdRunner.RunAsync(dotnetExe, testContext.Root, $"tool install nupkgwrench --version {version} --add-source {nupkgsFolder} --tool-path {dir}");
                 result.Success.Should().BeTrue(result.AllOutput);
 
                 var dllPath = Path.Combine(dir, ".store", "nupkgwrench", version, "nupkgwrench", version, "tools", "netcoreapp2.1", "any", "NupkgWrench.dll");

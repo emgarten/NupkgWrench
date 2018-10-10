@@ -29,7 +29,16 @@ namespace NupkgWrench
                 metadata.Add(dependenciesNode);
             }
 
-            var groups = dependenciesNode?.Elements(groupXName).ToList() ?? new List<XElement>();
+            var groups = new List<XElement>();
+
+            if (dependenciesNode != null && dependenciesNode.Elements().Any(e => e.Name == "group"))
+            {
+                groups = dependenciesNode.Elements(groupXName).ToList();
+            }
+            else
+            {
+                groups.Add(dependenciesNode);
+            }
 
             if (verb == EditType.Add)
             {

@@ -29,35 +29,26 @@ namespace NupkgWrench
                 metadata.Add(dependenciesNode);
             }
 
-            var groups = new List<XElement>();
+            var groups = dependenciesNode?.Elements(groupXName).ToList() ?? new List<XElement>();
 
-            if (dependenciesNode != null && dependenciesNode.Elements().Any(e => e.Name == "group"))
+            var rootDependencies = dependenciesNode?.Elements(dependencyXName).ToList() ?? new List<XElement>();
+
+            // Migrate from root level dependencies to groups if needed
+            if (groups.Count < 1 && rootDependencies.Count > 0)
             {
-                groups = dependenciesNode.Elements(groupXName).ToList();
-            }
-            else
-            {
-                groups.Add(dependenciesNode);
+                var group = new XElement(groupXName);
+                dependenciesNode.Add(group);
+                groups.Add(group);
+
+                rootDependencies.ForEach(e =>
+                {
+                    e.Remove();
+                    group.Add(e);
+                });
             }
 
             if (verb == EditType.Add)
             {
-                var rootDependencies = dependenciesNode?.Elements(dependencyXName).ToList() ?? new List<XElement>();
-
-                // Migrate from root level dependencies to groups if needed
-                if (groups.Count < 1 && rootDependencies.Count > 0)
-                {
-                    var group = new XElement(groupXName);
-                    dependenciesNode.Add(group);
-                    groups.Add(group);
-
-                    rootDependencies.ForEach(e =>
-                    {
-                        e.Remove();
-                        group.Add(e);
-                    });
-                }
-
                 // Create a default group if adding and no frameworks exist
                 if (frameworks.Count < 1 && groups.Count < 1)
                 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -74,8 +73,18 @@ namespace NupkgWrench
                     }
                 }
             }
+            else
+            {
+                // if no framework, working on dependencies node
+                if (groups.Count == 0)
+                {
+                    groups.Add(dependenciesNode);
+                }
+            }
 
             groups.ForEach(e => ProcessDependency(e, verb, id, version, exclude, include, clearExclude, clearInclude));
+
+
         }
 
         public static void ProcessDependency(XElement dependencies, EditType type, string id, string version, string exclude, string include, bool clearExclude, bool clearInclude)

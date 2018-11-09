@@ -63,18 +63,17 @@ namespace NupkgWrench.Tests.Properties {
         /// <summary>
         ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;package xmlns=&quot;http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd&quot;&gt;
-        ///  &lt;metadata&gt;
-        ///    &lt;id&gt;TestPackage&lt;/id&gt;
-        ///    &lt;version&gt;1.0.0&lt;/version&gt;
-        ///    &lt;title&gt;&lt;/title&gt;
-        ///    &lt;authors&gt;author&lt;/authors&gt;
-        ///    &lt;owners&gt;&lt;/owners&gt;
-        ///    &lt;requireLicenseAcceptance&gt;false&lt;/requireLicenseAcceptance&gt;
-        ///    &lt;description&gt;My package description.&lt;/description&gt;
-        ///    &lt;dependencies&gt;
-        ///      &lt;dependency id=&quot;a&quot; version=&quot;1.0.0&quot; /&gt;
-        ///      &lt;dependency id=&quot;b&quot; version=&quot;1.0.0&quot; /&gt;
-        ///    &lt;/dependencies&gt;        /// [rest of string was truncated]&quot;;.
+        ///    &lt;metadata&gt;
+        ///        &lt;id&gt;TestPackage&lt;/id&gt;
+        ///        &lt;version&gt;1.0.0&lt;/version&gt;
+        ///        &lt;title&gt;&lt;/title&gt;
+        ///        &lt;authors&gt;author&lt;/authors&gt;
+        ///        &lt;owners&gt;&lt;/owners&gt;
+        ///        &lt;requireLicenseAcceptance&gt;false&lt;/requireLicenseAcceptance&gt;
+        ///        &lt;description&gt;My package description.&lt;/description&gt;
+        ///        &lt;dependencies&gt;
+        ///            &lt;dependency id=&quot;a&quot; version=&quot;1.0.0&quot; /&gt;
+        ///            &lt;dependency i [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string NuspecWithNoDependencyGroup {
             get {

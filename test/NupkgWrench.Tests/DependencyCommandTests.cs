@@ -377,7 +377,7 @@ namespace NupkgWrench.Tests
             using (var workingDir = new TestFolder())
             {
                 var specFile = Path.Combine(workingDir.Root, "test.nuspec");
-                File.WriteAllText(specFile, Properties.Resources.NuspecWithNoDependencyGroup, Encoding.UTF8);
+                File.WriteAllText(specFile, Properties.Resources.NuspecWithNoDependencyGroupString, Encoding.UTF8);
                 var pb = new PackageBuilder(specFile, workingDir.Root, null, false);
 
                 var pkgFile = Path.Combine(workingDir.Root, "pkg.nupkg");

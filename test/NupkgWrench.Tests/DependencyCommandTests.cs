@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Frameworks;
@@ -150,7 +151,7 @@ namespace NupkgWrench.Tests
                 groups["net45"].Packages.Single(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "build" });
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "compile" , "runtime" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEmpty();
@@ -362,6 +363,39 @@ namespace NupkgWrench.Tests
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.ShouldBeEquivalentTo(new[] { "build" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.ShouldBeEquivalentTo(new[] { "content" });
+            }
+        }
+
+        [Theory]
+        [InlineData("a")]
+        [InlineData("b")]
+        [InlineData("c")]
+        [InlineData("f")]
+        [InlineData("z")]
+        public async Task DependencyCommandTests_RemoveWithNoDepdencyGroup(string packageId)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var specFile = Path.Combine(workingDir.Root, "test.nuspec");
+                File.WriteAllText(specFile, Properties.Resources.NuspecWithNoDependencyGroup, Encoding.UTF8);
+                var pb = new PackageBuilder(specFile, workingDir.Root, null, false);
+
+                var pkgFile = Path.Combine(workingDir.Root, "pkg.nupkg");
+                using (var writePackage = new FileStream(pkgFile, FileMode.OpenOrCreate))
+                {
+                    pb.Save(writePackage);
+                }
+
+                var log = new TestLogger();
+
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "remove", workingDir.Root, "--dependency-id", packageId }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var pr = new PackageArchiveReader(pkgFile);
+                var dependencies = pr.GetPackageDependencies();
+                dependencies.Count().Should().Be(1);
+                var dependency = dependencies.First();
+                dependency.Packages.Should().NotContain(p => string.Equals(packageId, p.Id, System.StringComparison.OrdinalIgnoreCase));
             }
         }
 

@@ -75,9 +75,9 @@ namespace NupkgWrench.Tests.Properties {
         ///            &lt;dependency id=&quot;a&quot; version=&quot;1.0.0&quot; /&gt;
         ///            &lt;dependency i [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string NuspecWithNoDependencyGroup {
+        internal static string NuspecWithNoDependencyGroupString {
             get {
-                return ResourceManager.GetString("NuspecWithNoDependencyGroup", resourceCulture);
+                return ResourceManager.GetString("NuspecWithNoDependencyGroupString", resourceCulture);
             }
         }
     }

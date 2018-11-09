@@ -117,8 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="NuspecWithNoDependencyGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\nuspecwithnodependencygroup.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="NuspecWithNoDependencyGroupString" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"&gt;
+    &lt;metadata&gt;
+        &lt;id&gt;TestPackage&lt;/id&gt;
+        &lt;version&gt;1.0.0&lt;/version&gt;
+        &lt;title&gt;&lt;/title&gt;
+        &lt;authors&gt;author&lt;/authors&gt;
+        &lt;owners&gt;&lt;/owners&gt;
+        &lt;requireLicenseAcceptance&gt;false&lt;/requireLicenseAcceptance&gt;
+        &lt;description&gt;My package description.&lt;/description&gt;
+        &lt;dependencies&gt;
+            &lt;dependency id="a" version="1.0.0" /&gt;
+            &lt;dependency id="b" version="1.0.0" /&gt;
+            &lt;dependency id="c" version="1.0.0" /&gt;
+            &lt;dependency id="d" version="1.0.0" /&gt;
+            &lt;dependency id="e" version="1.0.0" /&gt;
+            &lt;dependency id="f" version="1.0.0" /&gt;
+        &lt;/dependencies&gt;
+    &lt;/metadata&gt;
+&lt;/package&gt;</value>
   </data>
 </root>

@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -372,30 +373,138 @@ namespace NupkgWrench.Tests
         [InlineData("c")]
         [InlineData("f")]
         [InlineData("z")]
-        public async Task DependencyCommandTests_RemoveWithNoDepdencyGroup(string packageId)
+        public async Task DependencyCommandTests_RemoveWithNoDependencyGroup(string packageId)
         {
             using (var workingDir = new TestFolder())
             {
-                var specFile = Path.Combine(workingDir.Root, "test.nuspec");
-                File.WriteAllText(specFile, Properties.Resources.NuspecWithNoDependencyGroupString, Encoding.UTF8);
-                var pb = new PackageBuilder(specFile, workingDir.Root, null, false);
-
-                var pkgFile = Path.Combine(workingDir.Root, "pkg.nupkg");
-                using (var writePackage = new FileStream(pkgFile, FileMode.OpenOrCreate))
+                var testPackage = new TestNupkg()
                 {
-                    pb.Save(writePackage);
-                }
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = XDocument.Parse(Properties.Resources.NuspecWithNoDependencyGroupString)
+                    }
+                };
 
+                var zipFile = testPackage.Save(workingDir.Root);
                 var log = new TestLogger();
 
                 var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "remove", workingDir.Root, "--dependency-id", packageId }, log);
                 exitCode.Should().Be(0, log.GetMessages());
 
-                var pr = new PackageArchiveReader(pkgFile);
+                var pr = new PackageArchiveReader(zipFile.FullName);
                 var dependencies = pr.GetPackageDependencies();
                 dependencies.Count().Should().Be(1);
                 var dependency = dependencies.First();
                 dependency.Packages.Should().NotContain(p => string.Equals(packageId, p.Id, System.StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_ModifyWithNoDependencyGroup()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = XDocument.Parse(Properties.Resources.NuspecWithNoDependencyGroupString)
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "modify", workingDir.Root, "--dependency-id", "a", "--dependency-version", "[2.0.0, 3.0.0)" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var pr = new PackageArchiveReader(zipFile.FullName);
+                var dependencies = pr.GetPackageDependencies();
+                dependencies.Count().Should().Be(1);
+                var deps = dependencies.First().Packages.ToDictionary(e => e.Id);
+
+                deps["a"].VersionRange.ToNormalizedString().Should().Be("[2.0.0, 3.0.0)");
+                deps["b"].VersionRange.ToNormalizedString().Should().Be("[1.0.0, )");
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_AddWithNoDependencyGroup()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = XDocument.Parse(Properties.Resources.NuspecWithNoDependencyGroupString)
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "add", workingDir.Root, "--dependency-id", "z", "--dependency-version", "2.0.0" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var pr = new PackageArchiveReader(zipFile.FullName);
+                var dependencies = pr.GetPackageDependencies();
+                dependencies.Count().Should().Be(1);
+                var deps = dependencies.First().Packages.ToDictionary(e => e.Id);
+                deps.Count.Should().Be(7);
+
+                deps["z"].VersionRange.ToNormalizedString().Should().Be("[2.0.0, )");
+                deps["b"].VersionRange.ToNormalizedString().Should().Be("[1.0.0, )");
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_AddEmptyGroupWithNoDependencyGroup()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = XDocument.Parse(Properties.Resources.NuspecWithNoDependencyGroupString)
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", "netstandard1.6" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var pr = new PackageArchiveReader(zipFile.FullName);
+                var dependencies = pr.GetPackageDependencies();
+                dependencies.Count().Should().Be(2);
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_ClearWithNoDependencyGroup()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = XDocument.Parse(Properties.Resources.NuspecWithNoDependencyGroupString)
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "clear", workingDir.Root }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var pr = new PackageArchiveReader(zipFile.FullName);
+                var dependencies = pr.GetPackageDependencies();
+                dependencies.Count().Should().Be(0);
             }
         }
 

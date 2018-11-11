@@ -1,10 +1,13 @@
 # Release Notes
 
+## 1.4.25
+* Fixed dependencies command for nuspec dependency nodes without groups
+
 ## 1.4.0
- * Added NupkgWrenchExe nupkg, this will not have a package type and will work for nuget.exe install
- * Added dependencies add/remove/modify commands
- * Converted from DotnetCliTool to DotnetTool package to support dotnet install -g
- * Updated nuget libraries to 4.6.2
+* Added NupkgWrenchExe nupkg, this will not have a package type and will work for nuget.exe install
+* Added dependencies add/remove/modify commands
+* Converted from DotnetCliTool to DotnetTool package to support dotnet install -g
+* Updated nuget libraries to 4.6.2
 
 ## 1.3.0
 * netcoreapp2.0 support

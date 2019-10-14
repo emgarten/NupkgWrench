@@ -5,27 +5,36 @@
   <PropertyGroup Condition=" '$(IsXPlat)' != 'true' ">
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.0;net461</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(IsXPlat)' == 'true' ">
+  <PropertyGroup Condition=" '$(IsXPlat)' == 'true' OR '$(PackProjectDotnetTool)' == 'true'">
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(PackProjectDotnetTool)' == 'true' ">
+    <ToolCommandName>nupkgwrench</ToolCommandName>
+    <IsTool>true</IsTool>
+    <PackAsTool>true</PackAsTool>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
     <AssemblyName>NupkgWrench</AssemblyName>
     <OutputType>Exe</OutputType>
-    <ToolCommandName>nupkgwrench</ToolCommandName>
     <PackProject>true</PackProject>
     <PublishProject>true</PublishProject>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackageVersion)" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="$(CommandLineUtilsVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(FileSystemGlobbingVersion)" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <!--<Reference Include="System.IO.Compression" />-->
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
+
   <ItemGroup>
     <Folder Include="Common\" />
   </ItemGroup>
@@ -46,11 +55,11 @@
 
     <Error Condition=" '$(IsXPlat)' != 'true' AND '$(MergedExePathExists)' != 'true' " Text="Missing $(MergedExePath)" />
 
-    <!-- Pack NupkgWrench with NupkgWrench.exe -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(IsXPlat)' != 'true' " Properties="Configuration=$(Configuration);&#xD;&#xA;                         PackageOutputPath=$(NupkgOutputDirectory);&#xD;&#xA;                         NoPackageAnalysis=true;&#xD;&#xA;                         IncludeSymbols=false;&#xD;&#xA;                         IsTool=true;&#xD;&#xA;                         NuspecFile=NupkgWrench.nuspec;&#xD;&#xA;                         NuspecProperties=$(NuspecProperties)" />
 
-    <!-- Pack NupkgWrenchExe with NupkgWrench.exe -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(IsXPlat)' != 'true' " Properties="Configuration=$(Configuration);&#xD;&#xA;                         PackageOutputPath=$(NupkgOutputDirectory);&#xD;&#xA;                         NoPackageAnalysis=true;&#xD;&#xA;                         IncludeSymbols=false;&#xD;&#xA;                         IsTool=true;&#xD;&#xA;                         NuspecFile=NupkgWrenchExe.nuspec;&#xD;&#xA;                         NuspecProperties=$(NuspecProperties)" />
+    <!-- Pack NupkgWrench -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Properties="Configuration=$(Configuration);PackageOutputPath=$(NupkgOutputDirectory);PackProjectDotnetTool=true" />
+    <!-- Pack NupkgWrench Exe -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(MergedExePathExists)' == 'true' " Properties="Configuration=$(Configuration);PackageOutputPath=$(NupkgOutputDirectory);NoPackageAnalysis=true;IncludeSymbols=false;NuspecFile=NupkgWrenchExe.nuspec;NuspecProperties=$(NuspecProperties);" />
   </Target>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

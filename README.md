@@ -9,7 +9,7 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 ## Getting NupkgWrench
 
 ### Manually getting nupkgwrench.exe (Windows and Mono)
-1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
+1. Download the latest nupkg from [NupkgWrenchExe on NuGet.org](https://www.nuget.org/packages/NupkgWrenchExe)
 1. Extract *tools/NupkgWrench.exe* to a local folder and run it.
 
 ### NuGet.exe install

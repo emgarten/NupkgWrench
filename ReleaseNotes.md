@@ -2,6 +2,7 @@
 
 ## 2.0.0
 * netcoreapp3.0 support
+* release command support for --four-part-version
 
 ## 1.4.25
 * Fixed dependencies command for nuspec dependency nodes without groups

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,6 +30,7 @@ namespace NupkgWrench
             var newVersion = cmd.Option("-n|--new-version", "New version, this replaces the entire version of the nupkg. Cannot be used with --label.", CommandOptionType.SingleValue);
             var label = cmd.Option("-r|--label", "Pre-release label, this keeps the version number the same and only modifies the release label. Cannot be used with --new-version.", CommandOptionType.SingleValue);
             var stable = cmd.Option("-s|--stable", "Remove pre-release label, this is the default option.", CommandOptionType.NoValue);
+            var fourParts = cmd.Option("--four-part-version", "Convert normalized versions to four part versions. Ex: 1.0.0 -> 1.0.0.0", CommandOptionType.NoValue);
 
             var argRoot = cmd.Argument(
                 "[root]",
@@ -43,7 +44,7 @@ namespace NupkgWrench
                 try
                 {
                     // Validate parameters
-                    int optionCount = 0;
+                    var optionCount = 0;
 
                     if (stable.HasValue())
                     {
@@ -60,9 +61,14 @@ namespace NupkgWrench
                         optionCount++;
                     }
 
+                    if (fourParts.HasValue())
+                    {
+                        optionCount++;
+                    }
+
                     if (optionCount > 1)
                     {
-                        throw new ArgumentException($"Invalid option combination. Specify only one of the following options: {stable.LongName}, {newVersion.LongName}, {label.LongName}.");
+                        throw new ArgumentException($"Invalid option combination. Specify only one of the following options: {stable.LongName}, {newVersion.LongName}, {label.LongName}, {fourParts.LongName}.");
                     }
 
                     var inputs = argRoot.Values;
@@ -101,6 +107,23 @@ namespace NupkgWrench
                                 var versionPart = identity.Version.ToString().Split('-')[0];
 
                                 updatedVersion = NuGetVersion.Parse($"{versionPart}-{label.Value()}");
+                            }
+                            else if (fourParts.HasValue())
+                            {
+                                var parts = identity.Version.ToString().Split('-');
+                                var newVersionString = parts[0];
+
+                                while (newVersionString.Split('.').Length < 4)
+                                {
+                                    newVersionString += ".0";
+                                }
+
+                                if (parts.Length > 1)
+                                {
+                                    newVersionString = $"{newVersionString}-{string.Join("-", parts.Skip(1))}";
+                                }
+
+                                updatedVersion = NuGetVersion.Parse(newVersionString);
                             }
                             else
                             {

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -618,6 +618,60 @@ namespace NupkgWrench.Tests
 
                 Assert.Equal("2.0.0", nuspecA.GetDependencyGroups().Single().Packages.Single(e => e.Id == "b").VersionRange.ToLegacyShortString());
                 Assert.Equal("[1.0.0]", nuspecA.GetDependencyGroups().Single().Packages.Single(e => e.Id == "c").VersionRange.ToLegacyShortString());
+            }
+        }
+
+        [Fact]
+        public async Task Command_ReleaseCommand_FourPartVersion()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var testPackageB = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "b",
+                        Version = "2.0.0-alpha"
+                    }
+                };
+
+                var testPackageC = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "c",
+                        Version = "1.2.3.4"
+                    }
+                };
+
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
+                var zipFileC = testPackageC.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "release", workingDir.Root, "--four-part-version" }, log);
+
+                var nuspecA = GetNuspec(Path.Combine(workingDir.Root, "a.1.0.0.0.nupkg"));
+                var nuspecB = GetNuspec(Path.Combine(workingDir.Root, "b.2.0.0.0-alpha.nupkg"));
+                var nuspecC = GetNuspec(Path.Combine(workingDir.Root, "c.1.2.3.4.nupkg"));
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal("1.0.0.0", nuspecA.GetVersion().ToString());
+                Assert.Equal("2.0.0.0-alpha", nuspecB.GetVersion().ToString());
+                Assert.Equal("1.2.3.4", nuspecC.GetVersion().ToString());
             }
         }
 

@@ -166,6 +166,27 @@ packageB.1.0.0-beta -> packageB.1.0.0-rc1
 c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0-rc1.nupkg
 ```
 
+### Set a non-normalized nupkg version
+
+NuGet normalizes package versions to three parts. To convert back to a four part version number use the ``release`` command with `--four-part-version`.
+This command can be used to revert version normalization done in NuGet pack. Since nupkgwrench can work on a directory of nupkgs or filter by id, this provides an easy way to update package versions without needing to discover the original version of the nupkg first in build scripts.
+
+```
+> NupkgWrench release c:\nupkgs --four-part-version
+processing c:\nupkgs\packageA.2.0.0.nupkg
+packageA.2.0.0 -> packageA.2.0.0.0
+c:\nupkgs\packageA.2.0.0.nupkg -> packageA.2.0.0.0.nupkg
+```
+
+``--new-version`` allows setting the version directly to apply any non-normalized version change.
+
+```
+> NupkgWrench release c:\nupkgs --new-version 1.00
+processing c:\nupkgs\packageA.1.0.0.nupkg
+packageA.1.0.0 -> packageA.1.00
+c:\nupkgs\packageA.1.0.0.nupkg -> packageA.1.00.nupkg
+```
+
 ### Adding after pack
 
 NuGet.exe pack and dotnet pack typically create a nupkg with everything needed, but for advanced scenarios it is sometimes required to pack using a nuspec file. To avoid creating a nupkg with all the needed dependencies and files NupkgWrench can be used to make simple changes on top of existing nupkgs.

@@ -1,5 +1,8 @@
 # Release Notes
 
+## 2.0.0
+* netcoreapp3.0 support
+
 ## 1.4.25
 * Fixed dependencies command for nuspec dependency nodes without groups
 

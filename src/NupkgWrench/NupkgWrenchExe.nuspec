@@ -9,7 +9,7 @@
     <licenseUrl>https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md</licenseUrl>
     <projectUrl>https://github.com/emgarten/NupkgWrench/</projectUrl>
     <description>An alternative version of NupkgWrench with only the tool exe.</description>
-    <copyright>Copyright © 2017 Justin Emgarten</copyright>
+    <copyright>Copyright © 2019 Justin Emgarten</copyright>
     <tags>nupkg nuget-powertool</tags>
     <repository type="git" url="https://github.com/emgarten/NupkgWrench" branch="$branch$" commit="$commit$" />
     <developmentDependency>true</developmentDependency>

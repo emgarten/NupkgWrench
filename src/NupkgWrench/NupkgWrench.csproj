@@ -2,11 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
-  <PropertyGroup Condition=" '$(IsXPlat)' != 'true' ">
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.0;net461</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(IsXPlat)' == 'true' OR '$(PackProjectDotnetTool)' == 'true'">
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PackProjectDotnetTool)' == 'true' ">
@@ -21,7 +18,20 @@
     <OutputType>Exe</OutputType>
     <PackProject>true</PackProject>
     <PublishProject>true</PublishProject>
+    <SkipDocs>true</SkipDocs>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
+
+  <!-- exe settings -->
+  <PropertyGroup Condition=" '$(PublishSingleFile)' == 'true' ">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackageVersion)" />
@@ -59,7 +69,7 @@
     <!-- Pack NupkgWrench -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Properties="Configuration=$(Configuration);PackageOutputPath=$(NupkgOutputDirectory);PackProjectDotnetTool=true" />
     <!-- Pack NupkgWrench Exe -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(MergedExePathExists)' == 'true' " Properties="Configuration=$(Configuration);PackageOutputPath=$(NupkgOutputDirectory);NoPackageAnalysis=true;IncludeSymbols=false;NuspecFile=NupkgWrenchExe.nuspec;NuspecProperties=$(NuspecProperties);" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Condition=" '$(MergedExePathExists)' == 'true' " Properties="Configuration=$(Configuration);PackageOutputPath=$(NupkgOutputDirectory);NoPackageAnalysis=true;IncludeSymbols=false;NuspecFile=NupkgWrenchExe.nuspec;NuspecProperties=$(NuspecProperties);PackageId=NupkgWrenchExe" />
   </Target>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

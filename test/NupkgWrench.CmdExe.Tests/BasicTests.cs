@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using NuGet.Test.Helpers;
 using FluentAssertions;
+using NuGet.Test.Helpers;
 using Test.Common;
 using Xunit;
 

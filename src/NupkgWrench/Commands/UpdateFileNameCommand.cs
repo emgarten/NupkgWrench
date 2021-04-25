@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using NuGet.Common;

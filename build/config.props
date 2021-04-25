@@ -16,12 +16,9 @@
   <PropertyGroup>
     <Authors>emgarten</Authors>
     <PackageProjectUrl>https://github.com/emgarten/NupkgWrench</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/emgarten/NupkgWrench</RepositoryUrl>
     <PackageTags>nupkg;nuget-powertool</PackageTags>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
-    <Copyright>Copyright © 2018 Justin Emgarten</Copyright>
-    <PackageIconUrl>https://emgartenstatic.blob.core.windows.net/nupkgs/icons/nupkgwrench.png</PackageIconUrl>
   </PropertyGroup>
 </Project>

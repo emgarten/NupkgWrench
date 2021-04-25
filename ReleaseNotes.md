@@ -1,5 +1,9 @@
 # Release Notes
 
+## 3.0.0
+* Update to net5.0
+* Build NupkgWrench.exe as a standalone file instead of ILMerging
+
 ## 2.0.0
 * netcoreapp3.0 support
 * release command support for --four-part-version

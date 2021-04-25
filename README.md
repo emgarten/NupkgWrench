@@ -16,20 +16,15 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
 1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
 
-### Install global tool (dotnet CLI >= 2.1.300-preview2)
+### Install dotnet global tool (recommended)
 1. `dotnet tool install -g nupkgwrench`
 1. `nupkgwrench` should now be on your *PATH*
-
-### Manually run nupkgwrench.dll (dotnet CLI cross platform)
-1. Download the latest nupkg from [NuGet.org](https://www.nuget.org/packages/NupkgWrench)
-1. Extract the nupkg to a local folder
-1. `dotnet <PathToNupkg>/tools/netcoreapp2.1/any/NupkgWrench.dll`
 
 ## Build Status
 
 | AppVeyor | Travis | Visual Studio Online |
 | --- | --- | --- |
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.org/emgarten/NupkgWrench.svg?branch=master)](https://travis-ci.org/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
+| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.com/emgarten/NupkgWrench.svg?branch=main)](https://travis-ci.com/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
 
 ## CI builds
 
@@ -206,7 +201,7 @@ Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
 This solution uses .NET Core, get the tools [here](http://dot.net/).
 
 ### License
-[MIT License](https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md)
+[MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)
 
 # Related projects 
 

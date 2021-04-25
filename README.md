@@ -29,7 +29,7 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 
 | AppVeyor | Travis | Visual Studio Online |
 | --- | --- | --- |
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.org/emgarten/NupkgWrench.svg?branch=master)](https://travis-ci.org/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
+| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.com/emgarten/NupkgWrench.svg?branch=main)](https://travis-ci.com/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
 
 ## CI builds
 
@@ -206,7 +206,7 @@ Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
 This solution uses .NET Core, get the tools [here](http://dot.net/).
 
 ### License
-[MIT License](https://github.com/emgarten/NupkgWrench/blob/master/LICENSE.md)
+[MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)
 
 # Related projects 
 

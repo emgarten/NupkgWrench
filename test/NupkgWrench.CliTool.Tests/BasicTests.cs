@@ -50,7 +50,7 @@ namespace NupkgWrench.CliTool.Tests
                 var result = await CmdRunner.RunAsync(dotnetExe, testContext.Root, $"tool install nupkgwrench --version {version} --add-source {nupkgsFolder} --tool-path {dir}");
                 result.Success.Should().BeTrue(result.AllOutput);
 
-                var dllPath = Path.Combine(dir, ".store", "nupkgwrench", version, "nupkgwrench", version, "tools", "net5.0", "any", "NupkgWrench.dll");
+                var dllPath = Path.Combine(dir, ".store", "nupkgwrench", version, "nupkgwrench", version, "tools", "net6.0", "any", "NupkgWrench.dll");
 
                 if (!File.Exists(dllPath))
                 {

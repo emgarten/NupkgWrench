@@ -195,6 +195,7 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        [System.Obsolete]
         public async Task GivenThatIAddAFrameworkAssemblyToAnEmptyNuspecVerifyItIsAdded()
         {
             using (var workingDir = new TestFolder())
@@ -236,6 +237,7 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        [System.Obsolete]
         public async Task GivenThatIAddMultipleFrameworkAssembliesToAnEmptyNuspecVerifyItIsAdded()
         {
             using (var workingDir = new TestFolder())
@@ -257,7 +259,7 @@ namespace NupkgWrench.Tests
                 var log = new TestLogger();
 
                 // Act
-                var exitCode = await Program.MainCore(new[] { "nuspec", "frameworkassemblies", "add", path, "--assembly-name", "testA", "--assembly-name", "testB", "--framework", "net60", "--framework", "net70" }, log);
+                var exitCode = await Program.MainCore(new[] { "nuspec", "frameworkassemblies", "add", path, "--assembly-name", "testA", "--assembly-name", "testB", "--framework", "net46", "--framework", "net461" }, log);
 
                 NuspecReader reader = null;
 
@@ -270,7 +272,7 @@ namespace NupkgWrench.Tests
                 exitCode.Should().Be(0, "no errors");
 
                 reader.GetFrameworkReferenceGroups().Count().Should().Be(2);
-                reader.GetFrameworkReferenceGroups().Select(e => e.TargetFramework.GetShortFolderName()).ShouldBeEquivalentTo(new[] { "net60", "net70" });
+                reader.GetFrameworkReferenceGroups().Select(e => e.TargetFramework.GetShortFolderName()).ShouldBeEquivalentTo(new[] { "net46", "net461" });
 
                 foreach (var group in reader.GetFrameworkReferenceGroups())
                 {

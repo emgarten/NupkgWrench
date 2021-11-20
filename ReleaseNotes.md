@@ -1,5 +1,8 @@
 # Release Notes
 
+## 4.0.0
+* Update to net6.0
+
 ## 3.0.0
 * Update to net5.0
 * Build NupkgWrench.exe as a standalone file instead of ILMerging

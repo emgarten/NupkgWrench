@@ -991,6 +991,7 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        [Obsolete]
         public async Task Command_FrameworkAssembliesClear()
         {
             using (var workingDir = new TestFolder())

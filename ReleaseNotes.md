@@ -1,5 +1,8 @@
 # Release Notes
 
+## 4.0.1
+* Update NuGet.* packages to 6.2.1
+
 ## 4.0.0
 * Update to net6.0
 

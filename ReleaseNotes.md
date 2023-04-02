@@ -1,5 +1,8 @@
 # Release Notes
 
+## 4.1.0
+* Add net7.0 support
+
 ## 4.0.1
 * Update NuGet.* packages to 6.2.1
 

@@ -22,9 +22,9 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 
 ## Build Status
 
-| AppVeyor | Travis | Visual Studio Online |
-| --- | --- | --- |
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![Travis](https://travis-ci.com/emgarten/NupkgWrench.svg?branch=main)](https://travis-ci.com/emgarten/NupkgWrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
+| AppVeyor | Visual Studio Online |
+| --- | --- |
+| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
 
 ## CI builds
 
@@ -197,8 +197,9 @@ Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
 > NupkgWrench nuspec dependencies emptygroup c:\nupkgs --framework net45
 ``` 
 
-## Coding
-This solution uses .NET Core, get the tools [here](http://dot.net/).
+## Contributing
+
+We welcome contributions. If you are interested in contributing you can report an issue or open a pull request to propose a change.
 
 ### License
 [MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)

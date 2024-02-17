@@ -1,5 +1,9 @@
 # Release Notes
 
+## 4.2.0
+* Add net8.0 support, remove net7.0 support
+* Update NuGet.* packages to 6.9.1
+
 ## 4.1.0
 * Add net7.0 support
 

@@ -1,12 +1,12 @@
 <Project ToolsVersion="15.0">
   <!-- Dependency versions -->
   <PropertyGroup>
-    <NuGetPackageVersion>6.9.1</NuGetPackageVersion>
-    <NuGetTestHelpersVersion>2.1.26</NuGetTestHelpersVersion>
+    <NuGetPackageVersion>6.12.1</NuGetPackageVersion>
+    <NuGetTestHelpersVersion>2.1.38</NuGetTestHelpersVersion>
     <CommandLineUtilsVersion>2.0.0</CommandLineUtilsVersion>
     <FileSystemGlobbingVersion>2.0.0</FileSystemGlobbingVersion>
   </PropertyGroup>
-  
+
   <!-- Config -->
   <PropertyGroup>
     <RepositoryName>NupkgWrench</RepositoryName>

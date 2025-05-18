@@ -22,17 +22,9 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 
 ## Build Status
 
-| AppVeyor | Visual Studio Online |
-| --- | --- |
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/jovo9wvxbqgws4ob?svg=true)](https://ci.appveyor.com/project/emgarten/nupkgwrench) | [![VSO](https://hackamore.visualstudio.com/_apis/public/build/definitions/abbff132-0981-4267-a80d-a6e7682a75a9/3/badge)](https://github.com/emgarten/nupkgwrench) |
-
-## CI builds
-
-CI builds are located on the following NuGet feed:
-
-``https://nuget.blob.core.windows.net/packages/index.json``
-
-The list of packages on this feed is [here](https://nuget.blob.core.windows.net/packages/sleet.packageindex.json).
+| Github |
+| --- |
+| [![.NET test](https://github.com/emgarten/NupkgWrench/actions/workflows/dotnet.yml/badge.svg)](https://github.com/emgarten/NupkgWrench/actions/workflows/dotnet.yml) |
 
 ## Features
 * Change the version, release label, or convert packages from pre-release to stable across a folder of nupkgs. NupkgWrench will modify all dependency version ranges to match the new package versions.

@@ -11,7 +11,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("updatefilename", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            cmdApp.Command("updatefilename", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
@@ -31,7 +35,7 @@ namespace NupkgWrench
 
             cmd.OnExecute(() =>
             {
-                var inputs = argRoot.Values;
+                var inputs = new List<string>(argRoot.Values);
 
                 if (inputs.Count < 1)
                 {

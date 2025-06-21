@@ -46,7 +46,7 @@ namespace NupkgWrench
                     // Validate parameters
                     CmdUtils.VerifyRequiredOptions(dependencyIdOption, dependencyVersionOption);
 
-                    var inputs = argRoot.Values;
+                    var inputs = new List<string>(argRoot.Values);
 
                     if (inputs.Count < 1)
                     {

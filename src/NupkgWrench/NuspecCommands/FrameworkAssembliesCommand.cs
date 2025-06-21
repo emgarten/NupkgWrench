@@ -7,7 +7,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            var parentCommand = cmdApp.Command("frameworkassemblies", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            var parentCommand = cmdApp.Command("frameworkassemblies", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
 
             FrameworkAssembliesClearCommand.Register(parentCommand, log);
             FrameworkAssembliesAddCommand.Register(parentCommand, log);

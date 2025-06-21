@@ -7,7 +7,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            var parentCommand = cmdApp.Command("nuspec", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            var parentCommand = cmdApp.Command("nuspec", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
 
             EditCommand.Register(parentCommand, log);
             ShowCommand.Register(parentCommand, log);

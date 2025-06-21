@@ -51,7 +51,7 @@ namespace NupkgWrench
                     CmdUtils.VerifyMutallyExclusiveOptions(editExclude, clearExclude);
                     CmdUtils.VerifyMutallyExclusiveOptions(editInclude, clearInclude);
 
-                    var inputs = argRoot.Values;
+                    var inputs = new List<string>(argRoot.Values);
 
                     if (inputs.Count < 1)
                     {

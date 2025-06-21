@@ -14,7 +14,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("add", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            cmdApp.Command("add", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
@@ -45,7 +49,7 @@ namespace NupkgWrench
                     CmdUtils.VerifyRequiredOptions(assemblyNames);
                     CmdUtils.VerifyMutallyExclusiveOptions(targetFrameworks, noFrameworks);
 
-                    var inputs = argRoot.Values;
+                    var inputs = new List<string>(argRoot.Values);
 
                     if (inputs.Count < 1)
                     {

@@ -15,7 +15,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("release", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            cmdApp.Command("release", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)
@@ -71,7 +75,7 @@ namespace NupkgWrench
                         throw new ArgumentException($"Invalid option combination. Specify only one of the following options: {stable.LongName}, {newVersion.LongName}, {label.LongName}, {fourParts.LongName}.");
                     }
 
-                    var inputs = argRoot.Values;
+                    var inputs = new List<string>(argRoot.Values);
 
                     if (inputs.Count < 1)
                     {

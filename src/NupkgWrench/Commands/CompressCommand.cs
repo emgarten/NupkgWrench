@@ -12,7 +12,11 @@ namespace NupkgWrench
     {
         public static void Register(CommandLineApplication cmdApp, ILogger log)
         {
-            cmdApp.Command("compress", (cmd) => Run(cmd, log), throwOnUnexpectedArg: true);
+            cmdApp.Command("compress", cmd =>
+            {
+                cmd.UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw;
+                Run(cmd, log);
+            });
         }
 
         private static void Run(CommandLineApplication cmd, ILogger log)

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <NuGetPackageVersion>6.12.1</NuGetPackageVersion>
     <NuGetTestHelpersVersion>2.1.38</NuGetTestHelpersVersion>
-    <CommandLineUtilsVersion>2.0.0</CommandLineUtilsVersion>
+    <CommandLineUtilsVersion>4.1.1</CommandLineUtilsVersion>
     <FileSystemGlobbingVersion>2.0.0</FileSystemGlobbingVersion>
   </PropertyGroup>
 

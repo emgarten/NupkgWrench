@@ -22,4 +22,14 @@
     <PackageTags>nupkg;nuget-powertool</PackageTags>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn)</NoWarn>
+  </PropertyGroup>
+
+  <!-- Analyzers -->
+   <PropertyGroup>
+      <AnalysisMode>Recommended</AnalysisMode>
+      <NoWarn>$(NoWarn);CA2211;CA1308;CA2007;CA1051</NoWarn>
+   </PropertyGroup>
 </Project>

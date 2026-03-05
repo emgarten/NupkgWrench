@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,13 +13,6 @@
   <ItemGroup>
     <PackageReference Include="NuGet.Test.Helpers" Version="$(NuGetTestHelpersVersion)" />
     <PackageReference Include="Xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Vuln fixes -->
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)\common.targets" />

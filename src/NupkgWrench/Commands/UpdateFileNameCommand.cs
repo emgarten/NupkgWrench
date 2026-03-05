@@ -35,7 +35,7 @@ namespace NupkgWrench
 
             cmd.OnExecute(() =>
             {
-                var inputs = new List<string>(argRoot.Values);
+                var inputs = argRoot.Values.Select(v => v!).ToList();
 
                 if (inputs.Count < 1)
                 {
@@ -46,7 +46,7 @@ namespace NupkgWrench
 
                 foreach (var nupkgPath in packages)
                 {
-                    PackageIdentity identity = null;
+                    PackageIdentity? identity = null;
 
                     using (var reader = new PackageArchiveReader(nupkgPath))
                     {
@@ -58,7 +58,7 @@ namespace NupkgWrench
                     var currentName = Path.GetFileName(nupkgPath);
 
                     var dir = Path.GetDirectoryName(nupkgPath);
-                    var expectedPath = Path.Combine(dir, expectedName);
+                    var expectedPath = Path.Combine(dir!, expectedName);
 
                     if (StringComparer.Ordinal.Equals(expectedName, currentName))
                     {

@@ -76,7 +76,7 @@ namespace NupkgWrench
         /// <summary>
         /// Get nuspec metadata element
         /// </summary>
-        public static XElement GetMetadataElement(XDocument doc)
+        public static XElement? GetMetadataElement(XDocument doc)
         {
             var package = doc.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("package", StringComparison.OrdinalIgnoreCase));
             return package?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("metadata", StringComparison.OrdinalIgnoreCase));
@@ -132,7 +132,7 @@ namespace NupkgWrench
         /// <summary>
         /// Wildcard pattern match
         /// </summary>
-        public static bool IsMatch(string input, string wildcardPattern)
+        public static bool IsMatch(string input, string? wildcardPattern)
         {
             if (string.IsNullOrEmpty(wildcardPattern))
             {
@@ -190,8 +190,8 @@ namespace NupkgWrench
             CommandOption highestVersionFilter,
             string[] inputs)
         {
-            return GetPackagesWithFilter(idFilter.HasValue() ? idFilter.Value() : null,
-                versionFilter.HasValue() ? versionFilter.Value() : null,
+            return GetPackagesWithFilter(idFilter.HasValue() ? idFilter.Value()! : null,
+                versionFilter.HasValue() ? versionFilter.Value()! : null,
                 excludeSymbols.HasValue(),
                 highestVersionFilter.HasValue(),
                 inputs);
@@ -201,8 +201,8 @@ namespace NupkgWrench
         /// Filter packages
         /// </summary>
         public static SortedSet<string> GetPackagesWithFilter(
-            string idFilter,
-            string versionFilter,
+            string? idFilter,
+            string? versionFilter,
             bool excludeSymbols,
             bool highestVersionFilter,
             string[] inputs)
@@ -255,7 +255,7 @@ namespace NupkgWrench
             return mappings;
         }
 
-        private static bool IsFilterMatch(string idFilter, string versionFilter, bool excludeSymbols, string path)
+        private static bool IsFilterMatch(string? idFilter, string? versionFilter, bool excludeSymbols, string path)
         {
             var identity = GetIdentityOrNull(path);
 
@@ -338,7 +338,7 @@ namespace NupkgWrench
 
             var parts = fullPattern.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
-            DirectoryInfo dir = null;
+            DirectoryInfo? dir = null;
 
             if (parts.Length > 1 && !IsGlobbingPattern(parts[0]))
             {
@@ -385,7 +385,7 @@ namespace NupkgWrench
 
         private static bool IsGlobbingPattern(string possiblePattern)
         {
-            return possiblePattern.IndexOf("*") > -1;
+            return possiblePattern.IndexOf('*') > -1;
         }
 
         private static bool IsPathRooted(string possiblePattern)
@@ -393,7 +393,7 @@ namespace NupkgWrench
             if (Path.DirectorySeparatorChar == '/')
             {
                 // Non-windows, Verify starts with a /
-                return possiblePattern.StartsWith("/");
+                return possiblePattern.StartsWith('/');
             }
             else
             {
@@ -403,7 +403,7 @@ namespace NupkgWrench
             }
         }
 
-        public static PackageIdentity GetIdentityOrNull(string path)
+        public static PackageIdentity? GetIdentityOrNull(string path)
         {
             try
             {
@@ -481,7 +481,7 @@ namespace NupkgWrench
         {
             // Read nuspec
             var metadata = Util.GetMetadataElement(nuspecXml);
-            var ns = metadata.Name.NamespaceName;
+            var ns = metadata!.Name.NamespaceName;
 
             var assembliesRoot = metadata.Elements()
                                             .Where(e => e.Name.LocalName.Equals("frameworkAssemblies", StringComparison.OrdinalIgnoreCase))
@@ -526,7 +526,7 @@ namespace NupkgWrench
                                                         .Select(NuGetFramework.Parse));
 
             // Add input frameworks
-            if (frameworks.Any())
+            if (frameworks.Count > 0)
             {
                 currentFrameworks.UnionWith(frameworks);
 
@@ -538,9 +538,9 @@ namespace NupkgWrench
             }
         }
 
-        public static XElement GetAssemblyElement(XElement assembliesRoot, string assemblyName)
+        public static XElement? GetAssemblyElement(XElement assembliesRoot, string assemblyName)
         {
-            XElement assemblyElement = null;
+            XElement? assemblyElement = null;
 
             foreach (var element in assembliesRoot.Elements())
             {

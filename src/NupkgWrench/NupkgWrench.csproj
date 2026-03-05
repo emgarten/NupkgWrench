@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PackProjectDotnetTool)' == 'true' ">
-    <ToolCommandName>nupkgwrench</ToolCommandName>
     <IsTool>true</IsTool>
     <PackAsTool>true</PackAsTool>
   </PropertyGroup>
 
   <PropertyGroup>
+    <ToolCommandName>nupkgwrench</ToolCommandName>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
     <AssemblyName>NupkgWrench</AssemblyName>
     <OutputType>Exe</OutputType>

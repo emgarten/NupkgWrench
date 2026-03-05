@@ -47,20 +47,20 @@ namespace NupkgWrench
                 }
 
                 // Normalize dir ending
-                var inputFolder = argRoot.Value.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                var inputFolder = argRoot.Value!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
                 if (string.IsNullOrEmpty(inputFolder) || !Directory.Exists(inputFolder))
                 {
                     throw new ArgumentException("Specify the path to a folder containg nupkg files.");
                 }
 
-                Directory.CreateDirectory(output.Value());
+                Directory.CreateDirectory(output.Value()!);
 
                 var folderReader = new PackageFolderReader(inputFolder);
                 var identity = folderReader.GetIdentity();
 
                 var nupkgName = $"{identity.Id}.{identity.Version.ToString()}.nupkg";
-                var outputPath = Path.Combine(output.Value(), nupkgName);
+                var outputPath = Path.Combine(output.Value()!, nupkgName);
 
                 log.LogMinimal($"compressing {inputFolder} -> {outputPath}");
 

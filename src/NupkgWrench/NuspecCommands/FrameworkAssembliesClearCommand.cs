@@ -38,7 +38,7 @@ namespace NupkgWrench
             {
                 try
                 {
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -52,8 +52,8 @@ namespace NupkgWrench
                         log.LogMinimal($"modifying {package}");
 
                         // Get nuspec file path
-                        string nuspecPath = null;
-                        XDocument nuspecXml = null;
+                        string? nuspecPath = null;
+                        XDocument? nuspecXml = null;
                         using (var packageReader = new PackageArchiveReader(package))
                         {
                             nuspecPath = packageReader.GetNuspecFile();
@@ -61,10 +61,10 @@ namespace NupkgWrench
                         }
 
                         // Remove node
-                        Util.AddOrUpdateMetadataElement(nuspecXml, "frameworkAssemblies", value: null);
+                        Util.AddOrUpdateMetadataElement(nuspecXml!, "frameworkAssemblies", value: null!);
 
                         // Update zip
-                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
+                        Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);
                     }
 
                     return 0;

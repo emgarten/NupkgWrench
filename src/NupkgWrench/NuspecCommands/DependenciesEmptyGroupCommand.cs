@@ -48,7 +48,7 @@ namespace NupkgWrench
             {
                 try
                 {
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -70,7 +70,7 @@ namespace NupkgWrench
                     {
                         foreach (var option in frameworkOption.Values)
                         {
-                            var fw = NuGetFramework.Parse(option);
+                            var fw = NuGetFramework.Parse(option!);
 
                             log.LogInformation($"adding empty dependency groups for {fw.GetShortFolderName()}");
 
@@ -85,16 +85,16 @@ namespace NupkgWrench
                         log.LogMinimal($"processing {package}");
 
                         // Get nuspec file path
-                        string nuspecPath = null;
-                        XDocument nuspecXml = null;
+                        string? nuspecPath = null;
+                        XDocument? nuspecXml = null;
                         using (var packageReader = new PackageArchiveReader(package))
                         {
                             nuspecPath = packageReader.GetNuspecFile();
                             nuspecXml = XDocument.Load(packageReader.GetNuspec());
                         }
 
-                        var metadata = Util.GetMetadataElement(nuspecXml);
-                        var ns = metadata.GetDefaultNamespace().NamespaceName;
+                        var metadata = Util.GetMetadataElement(nuspecXml!);
+                        var ns = metadata!.GetDefaultNamespace().NamespaceName;
                         var dependenciesNode = metadata.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("dependencies", StringComparison.OrdinalIgnoreCase));
 
                         if (dependenciesNode == null)
@@ -152,7 +152,7 @@ namespace NupkgWrench
                         }
 
                         // Update zip
-                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
+                        Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);
                     }
 
                     return 0;

@@ -46,7 +46,7 @@ namespace NupkgWrench
                     // Validate parameters
                     CmdUtils.VerifyRequiredOptions(dependencyIdOption, dependencyVersionOption);
 
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -58,7 +58,7 @@ namespace NupkgWrench
                     var editForFrameworks = new HashSet<NuGetFramework>();
                     if (frameworkOption.HasValue())
                     {
-                        editForFrameworks.UnionWith(frameworkOption.Values.Select(NuGetFramework.Parse));
+                        editForFrameworks.UnionWith(frameworkOption.Values.Select(v => NuGetFramework.Parse(v!)));
 
                         log.LogInformation($"adding dependency {dependencyId} to {string.Join(", ", editForFrameworks.Select(e => e.GetShortFolderName()))}");
                     }
@@ -79,7 +79,7 @@ namespace NupkgWrench
 
                         var nuspecXml = Util.GetNuspec(package);
 
-                        DependenciesUtil.Process(nuspecXml, DependenciesUtil.EditType.Add, editForFrameworks, dependencyId, version, exclude, include, false, false, log);
+                        DependenciesUtil.Process(nuspecXml, DependenciesUtil.EditType.Add, editForFrameworks, dependencyId!, version!, exclude, include, false, false, log);
 
                         Util.ReplaceNuspec(package, nuspecXml, log);
                     }

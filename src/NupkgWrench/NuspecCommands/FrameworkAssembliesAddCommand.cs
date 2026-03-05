@@ -49,7 +49,7 @@ namespace NupkgWrench
                     CmdUtils.VerifyRequiredOptions(assemblyNames);
                     CmdUtils.VerifyMutallyExclusiveOptions(targetFrameworks, noFrameworks);
 
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -63,9 +63,9 @@ namespace NupkgWrench
                         log.LogMinimal($"modifying {package}");
 
                         // Get nuspec file path
-                        string nuspecPath = null;
-                        XDocument nuspecXml = null;
-                        NuspecReader nuspecReader = null;
+                        string? nuspecPath = null;
+                        XDocument? nuspecXml = null;
+                        NuspecReader? nuspecReader = null;
                         var packageFrameworks = new List<NuGetFramework>();
                         using (var stream = File.OpenRead(package))
                         using (var packageReader = new PackageArchiveReader(stream, leaveStreamOpen: false))
@@ -84,10 +84,10 @@ namespace NupkgWrench
                             if (targetFrameworks.HasValue())
                             {
                                 // Validate user input
-                                ValidateTargetFrameworkInputs(targetFrameworks.Values);
+                                ValidateTargetFrameworkInputs(targetFrameworks.Values.Select(v => v!));
 
                                 // Add user input frameworks
-                                frameworks.AddRange(targetFrameworks.Values.Select(e => NuGetFramework.Parse(e)));
+                                frameworks.AddRange(targetFrameworks.Values.Select(e => NuGetFramework.Parse(e!)));
                             }
                             else
                             {
@@ -98,15 +98,15 @@ namespace NupkgWrench
                         // Remove unknown frameworks and package based frameworks.
                         frameworks.RemoveWhere(e => !e.IsSpecificFramework || e.IsPackageBased);
 
-                        var assemblyNamesUnique = new HashSet<string>(assemblyNames.Values, StringComparer.OrdinalIgnoreCase);
+                        var assemblyNamesUnique = new HashSet<string>(assemblyNames.Values.Select(v => v!), StringComparer.OrdinalIgnoreCase);
 
                         log.LogMinimal($"Adding framework assemblies: {string.Join(", ", assemblyNamesUnique)}");
 
                         // Modify nuspec
-                        Util.AddFrameworkAssemblyReferences(nuspecXml, assemblyNamesUnique, frameworks);
+                        Util.AddFrameworkAssemblyReferences(nuspecXml!, assemblyNamesUnique, frameworks);
 
                         // Update zip
-                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
+                        Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);
                     }
 
                     return 0;

@@ -38,7 +38,7 @@ namespace NupkgWrench
             {
                 try
                 {
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -58,7 +58,7 @@ namespace NupkgWrench
                                 // Ensure that these calls do not throw to verify that the NuGet
                                 // client could also read this.
                                 reader.GetIdentity();
-                                reader.GetPackageDependencies().ToArray();
+                                var packageDependencies = reader.GetPackageDependencies().ToArray();
 
                                 log.LogMinimal($"valid : {package}");
                             }

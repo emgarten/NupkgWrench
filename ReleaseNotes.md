@@ -1,5 +1,10 @@
 # Release Notes
 
+## 5.0.0
+* Add net10.0 support, remove net6.0
+* Update NuGet.* packages to 7.3.0
+* Update misc dependency packages
+
 ## 4.3.0
 * Add net9.0 support
 * Update NuGet.* packages to 6.12.1

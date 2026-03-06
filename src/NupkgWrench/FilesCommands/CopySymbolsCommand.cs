@@ -38,7 +38,7 @@ namespace NupkgWrench
 
             cmd.OnExecute(() =>
             {
-                var inputs = new List<string>(argRoot.Values);
+                var inputs = argRoot.Values.Select(v => v!).ToList();
 
                 if (inputs.Count < 1)
                 {
@@ -125,7 +125,7 @@ namespace NupkgWrench
                 key: pkg.Key,
                 value: symbolsPackages.Where(e => e.Value.Equals(pkg.Value))
                                                     .Select(e => e.Key)
-                                                    .FirstOrDefault()))
+                                                    .FirstOrDefault()!))
                            .Where(e => e.Value != null)
                            .ToList();
         }

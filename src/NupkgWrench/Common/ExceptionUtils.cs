@@ -43,17 +43,10 @@ namespace NupkgWrench
         ///   [Type] Exception message
         ///   [Type] Exception message
         /// </summary>
-        internal static void LogException(Exception ex, ILogger logger, LogLevel logLevel, bool showType, string message)
+        internal static void LogException(Exception ex, ILogger logger, LogLevel logLevel, bool showType, string? message)
         {
-            if (ex == null)
-            {
-                throw new ArgumentNullException(nameof(ex));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ArgumentNullException.ThrowIfNull(ex);
+            ArgumentNullException.ThrowIfNull(logger);
 
             // Log for debugging
             foreach (var innerEx in GetExceptions(ex))
@@ -89,12 +82,9 @@ namespace NupkgWrench
         ///   - [Type] Exception message
         /// </summary>
         /// <remarks>Displays exceptions top level if no message is given.</remarks>
-        internal static string GetExceptionMessage(Exception ex, bool showType, string message)
+        internal static string GetExceptionMessage(Exception ex, bool showType, string? message)
         {
-            if (ex == null)
-            {
-                throw new ArgumentNullException(nameof(ex));
-            }
+            ArgumentNullException.ThrowIfNull(ex);
 
             var sb = new StringBuilder();
             var hasMessage = !string.IsNullOrEmpty(message);
@@ -126,7 +116,7 @@ namespace NupkgWrench
         /// <summary>
         /// Return the root exception thrown.
         /// </summary>
-        internal static Exception Unwrap(Exception ex)
+        internal static Exception? Unwrap(Exception ex)
         {
             return GetExceptions(ex).FirstOrDefault();
         }
@@ -136,10 +126,7 @@ namespace NupkgWrench
         /// </summary>
         internal static string FormatExceptionWithName(Exception ex)
         {
-            if (ex == null)
-            {
-                throw new ArgumentNullException(nameof(ex));
-            }
+            ArgumentNullException.ThrowIfNull(ex);
 
             return $"[{ex.GetType()}] {ex.Message}";
         }
@@ -157,7 +144,7 @@ namespace NupkgWrench
                 }
                 else if (ex is TargetInvocationException te)
                 {
-                    return GetExceptions(te.InnerException);
+                    return GetExceptions(te.InnerException!);
                 }
                 else
                 {

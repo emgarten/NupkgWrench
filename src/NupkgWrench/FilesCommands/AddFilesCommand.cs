@@ -42,7 +42,7 @@ namespace NupkgWrench
 
             cmd.OnExecute(() =>
             {
-                var inputs = new List<string>(argRoot.Values);
+                var inputs = argRoot.Values.Select(v => v!).ToList();
 
                 if (inputs.Count < 1)
                 {
@@ -63,9 +63,9 @@ namespace NupkgWrench
 
                 foreach (var nupkgPath in packages)
                 {
-                    using (var fileInput = File.OpenRead(fileOption.Value()))
+                    using (var fileInput = File.OpenRead(fileOption.Value()!))
                     {
-                        Util.AddOrReplaceZipEntry(nupkgPath, pathOption.Value(), fileInput, log);
+                        Util.AddOrReplaceZipEntry(nupkgPath, pathOption.Value()!, fileInput, log);
                     }
                 }
 

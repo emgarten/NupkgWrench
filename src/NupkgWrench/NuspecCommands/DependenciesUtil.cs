@@ -12,10 +12,10 @@ namespace NupkgWrench
     /// </summary>
     public static class DependenciesUtil
     {
-        public static void Process(XDocument nuspecXml, EditType verb, HashSet<NuGetFramework> frameworks, string id, string version, string exclude, string include, bool clearExclude, bool clearInclude, ILogger log)
+        public static void Process(XDocument nuspecXml, EditType verb, HashSet<NuGetFramework> frameworks, string? id, string? version, string? exclude, string? include, bool clearExclude, bool clearInclude, ILogger log)
         {
             var metadata = Util.GetMetadataElement(nuspecXml);
-            var nameNamespaceName = metadata.Name.NamespaceName;
+            var nameNamespaceName = metadata!.Name.NamespaceName;
             var dependenciesXName = XName.Get("dependencies", nameNamespaceName);
             var groupXName = XName.Get("group", nameNamespaceName);
             var dependencyXName = XName.Get("dependency", nameNamespaceName);
@@ -38,7 +38,7 @@ namespace NupkgWrench
                 if (groups.Count < 1 && rootDependencies.Count > 0)
                 {
                     var group = new XElement(groupXName);
-                    dependenciesNode.Add(group);
+                    dependenciesNode!.Add(group);
                     groups.Add(group);
 
                     rootDependencies.ForEach(e =>
@@ -67,7 +67,7 @@ namespace NupkgWrench
                         if (!groups.Any(e => framework.Equals(e.GetFramework())))
                         {
                             var group = CreateGroupNode(nameNamespaceName, framework);
-                            dependenciesNode.Add(group);
+                            dependenciesNode!.Add(group);
                             groups.Add(group);
                         }
                     }
@@ -85,10 +85,10 @@ namespace NupkgWrench
             groups.ForEach(e => ProcessDependency(e, verb, id, version, exclude, include, clearExclude, clearInclude));
         }
 
-        public static void ProcessDependency(XElement dependencies, EditType type, string id, string version, string exclude, string include, bool clearExclude, bool clearInclude)
+        public static void ProcessDependency(XElement dependencies, EditType type, string? id, string? version, string? exclude, string? include, bool clearExclude, bool clearInclude)
         {
-            var metadata = Util.GetMetadataElement(dependencies.Document);
-            var nameNamespaceName = metadata.Name.NamespaceName;
+            var metadata = Util.GetMetadataElement(dependencies.Document!);
+            var nameNamespaceName = metadata!.Name.NamespaceName;
 
             var idXName = XName.Get("id");
             var versionXName = XName.Get("version");
@@ -100,12 +100,12 @@ namespace NupkgWrench
                 throw new ArgumentNullException(nameof(dependencies));
             }
 
-            var toUpdate = new List<XElement>();
+            var toUpdate = new List<XElement?>();
 
             if (string.IsNullOrEmpty(id) && type == EditType.Modify)
             {
                 // Modify can run on all dependencies if no id was used
-                toUpdate.AddRange(dependencies.Elements());
+                toUpdate.AddRange(dependencies!.Elements());
             }
             else
             {
@@ -123,7 +123,7 @@ namespace NupkgWrench
                 if (type == EditType.Clear)
                 {
                     // Clear everything
-                    dependencies.Elements().ToList().ForEach(e => e.Remove());
+                    dependencies!.Elements().ToList().ForEach(e => e.Remove());
                     dependency = null;
                 }
 
@@ -148,7 +148,7 @@ namespace NupkgWrench
                     {
                         dependency.SetAttributeValue(includeXName, include);
                     }
-                    dependencies.Add(dependency);
+                    dependencies!.Add(dependency);
                 }
 
                 if (dependency != null && type == EditType.Modify)
@@ -190,12 +190,12 @@ namespace NupkgWrench
             {
                 var version = fw.Version.ToString();
 
-                if (version.EndsWith(".0.0"))
+                if (version.EndsWith(".0.0", StringComparison.Ordinal))
                 {
                     version = version.Substring(0, version.Length - 4);
                 }
 
-                if (version.EndsWith(".0")
+                if (version.EndsWith(".0", StringComparison.Ordinal)
                  && version.IndexOf('.') != version.LastIndexOf('.'))
                 {
                     version = version.Substring(0, version.Length - 2);

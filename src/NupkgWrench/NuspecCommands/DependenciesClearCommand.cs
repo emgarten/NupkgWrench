@@ -42,7 +42,7 @@ namespace NupkgWrench
             {
                 try
                 {
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -55,7 +55,7 @@ namespace NupkgWrench
                     {
                         foreach (var option in frameworkOption.Values)
                         {
-                            var fw = NuGetFramework.Parse(option);
+                            var fw = NuGetFramework.Parse(option!);
 
                             log.LogInformation($"removing dependencies for {fw.GetShortFolderName()}");
 
@@ -72,7 +72,7 @@ namespace NupkgWrench
                         // Get nuspec file path
                         var nuspecXml = Util.GetNuspec(package);
                         var metadata = Util.GetMetadataElement(nuspecXml);
-                        var ns = metadata.GetDefaultNamespace().NamespaceName;
+                        var ns = metadata!.GetDefaultNamespace().NamespaceName;
                         var dependenciesNode = metadata.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("dependencies", StringComparison.OrdinalIgnoreCase));
 
                         if (dependenciesNode != null)

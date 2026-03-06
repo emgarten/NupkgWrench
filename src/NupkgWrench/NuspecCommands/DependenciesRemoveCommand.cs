@@ -40,7 +40,7 @@ namespace NupkgWrench
             {
                 try
                 {
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -53,7 +53,7 @@ namespace NupkgWrench
                     var editForFrameworks = new HashSet<NuGetFramework>();
                     if (frameworkOption.HasValue())
                     {
-                        editForFrameworks.UnionWith(frameworkOption.Values.Select(NuGetFramework.Parse));
+                        editForFrameworks.UnionWith(frameworkOption.Values.Select(v => NuGetFramework.Parse(v!)));
 
                         if (type == DependenciesUtil.EditType.Clear)
                         {
@@ -84,7 +84,7 @@ namespace NupkgWrench
 
                         var nuspecXml = Util.GetNuspec(package);
 
-                        DependenciesUtil.Process(nuspecXml, type, editForFrameworks, dependencyId, null, null, null, false, false, log);
+                        DependenciesUtil.Process(nuspecXml, type, editForFrameworks, dependencyId, null, null, null, false, false, log); // id/version/exclude/include may be null
 
                         Util.ReplaceNuspec(package, nuspecXml, log);
                     }

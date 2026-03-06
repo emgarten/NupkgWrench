@@ -116,7 +116,7 @@ namespace NupkgWrench.Tests
                 framework.Value.Should().Be("net45,net46");
             }
 
-            assemblies.ShouldBeEquivalentTo(found);
+            assemblies.Should().BeEquivalentTo(found);
         }
 
         [Fact]
@@ -232,7 +232,7 @@ namespace NupkgWrench.Tests
                 reader.GetFrameworkReferenceGroups().Count().Should().Be(1, "packages based frameworks are ignored");
                 reader.GetFrameworkReferenceGroups().Single().Items.Count().Should().Be(1);
                 reader.GetFrameworkReferenceGroups().Single().Items.Single().Should().Be("test");
-                reader.GetFrameworkReferenceGroups().Single().TargetFramework.ShouldBeEquivalentTo(NuGetFramework.Parse("net45"));
+                reader.GetFrameworkReferenceGroups().Single().TargetFramework.Should().BeEquivalentTo(NuGetFramework.Parse("net45"));
             }
         }
 
@@ -272,11 +272,11 @@ namespace NupkgWrench.Tests
                 exitCode.Should().Be(0, "no errors");
 
                 reader.GetFrameworkReferenceGroups().Count().Should().Be(2);
-                reader.GetFrameworkReferenceGroups().Select(e => e.TargetFramework.GetShortFolderName()).ShouldBeEquivalentTo(new[] { "net46", "net461" });
+                reader.GetFrameworkReferenceGroups().Select(e => e.TargetFramework.GetShortFolderName()).Should().BeEquivalentTo(new[] { "net46", "net461" });
 
                 foreach (var group in reader.GetFrameworkReferenceGroups())
                 {
-                    group.Items.ShouldBeEquivalentTo(new[] { "testA", "testB" });
+                    group.Items.Should().BeEquivalentTo(new[] { "testA", "testB" });
                 }
             }
         }

@@ -75,7 +75,7 @@ namespace NupkgWrench
                         throw new ArgumentException($"Invalid option combination. Specify only one of the following options: {stable.LongName}, {newVersion.LongName}, {label.LongName}, {fourParts.LongName}.");
                     }
 
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -104,7 +104,7 @@ namespace NupkgWrench
 
                             if (newVersion.HasValue())
                             {
-                                updatedVersion = NuGetVersion.Parse(newVersion.Value());
+                                updatedVersion = NuGetVersion.Parse(newVersion.Value()!);
                             }
                             else if (label.HasValue())
                             {
@@ -145,13 +145,13 @@ namespace NupkgWrench
                             // Determine the new file name
                             var newFileName = $"{newIdentity.Id}.{newIdentity.Version.ToString()}.nupkg";
 
-                            if (package.EndsWith(".symbols.nupkg"))
+                            if (package.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase))
                             {
                                 newFileName = $"{newIdentity.Id}.{newIdentity.Version.ToString()}.symbols.nupkg";
                             }
 
                             var rootDir = Path.GetDirectoryName(package);
-                            var newFullPath = Path.Combine(rootDir, newFileName);
+                            var newFullPath = Path.Combine(rootDir!, newFileName);
 
                             // Old path -> New path
                             fileNameUpdates.Add(package, newFullPath);
@@ -179,12 +179,12 @@ namespace NupkgWrench
                         var metadata = Util.GetMetadataElement(nuspec);
 
                         // Find all <dependency> elements
-                        foreach (var dependency in metadata.DescendantNodes().Select(e => e as XElement).Where(e => e != null))
+                        foreach (var dependency in metadata!.DescendantNodes().Select(e => e as XElement).Where(e => e != null))
                         {
-                            var depId = dependency.Attributes().FirstOrDefault(e => e.Name.LocalName.Equals("id", StringComparison.OrdinalIgnoreCase))?.Value;
+                            var depId = dependency!.Attributes().FirstOrDefault(e => e.Name.LocalName.Equals("id", StringComparison.OrdinalIgnoreCase))?.Value;
 
                             // Check if this is a package that has been updated
-                            if (updatedIds.Contains(depId))
+                            if (depId != null && updatedIds.Contains(depId))
                             {
                                 var rangeAttribute = dependency.Attributes().FirstOrDefault(e => e.Name.LocalName.Equals("version", StringComparison.OrdinalIgnoreCase));
 
@@ -323,7 +323,7 @@ namespace NupkgWrench
 
             foreach (var pair in fileNameUpdates)
             {
-                HashSet<string> matches;
+                HashSet<string>? matches;
                 if (!conflicts.TryGetValue(pair.Value, out matches))
                 {
                     matches = new HashSet<string>(StringComparer.Ordinal);

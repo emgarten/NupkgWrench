@@ -62,7 +62,7 @@ namespace NupkgWrench.Tests
                 exitCode.Should().Be(0, log.GetMessages());
 
                 after.Should().Contain("lib/net45/a.dll");
-                diff.ShouldBeEquivalentTo(new string[] { "lib/net45/a.pdb" });
+                diff.Should().BeEquivalentTo(new string[] { "lib/net45/a.pdb" });
             }
         }
 
@@ -107,7 +107,7 @@ namespace NupkgWrench.Tests
                 exitCode.Should().Be(0, log.GetMessages());
 
                 after.Should().Contain("lib/net45/a.dll");
-                diff.ShouldBeEquivalentTo(new string[] { });
+                diff.Should().BeEquivalentTo(new string[] { });
             }
         }
 
@@ -152,7 +152,7 @@ namespace NupkgWrench.Tests
                 exitCode.Should().Be(0, log.GetMessages());
 
                 after.Should().Contain("lib/net45/a.dll");
-                diff.ShouldBeEquivalentTo(new[] { "lib/net45/a.pdb" });
+                diff.Should().BeEquivalentTo(new[] { "lib/net45/a.pdb" });
             }
         }
 

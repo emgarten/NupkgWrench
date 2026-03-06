@@ -1,10 +1,10 @@
 <Project ToolsVersion="15.0">
   <!-- Dependency versions -->
   <PropertyGroup>
-    <NuGetPackageVersion>6.12.1</NuGetPackageVersion>
-    <NuGetTestHelpersVersion>2.1.38</NuGetTestHelpersVersion>
-    <CommandLineUtilsVersion>4.1.1</CommandLineUtilsVersion>
-    <FileSystemGlobbingVersion>2.0.0</FileSystemGlobbingVersion>
+    <NuGetPackageVersion>7.3.0</NuGetPackageVersion>
+    <NuGetTestHelpersVersion>2.1.39</NuGetTestHelpersVersion>
+    <CommandLineUtilsVersion>5.0.1</CommandLineUtilsVersion>
+    <FileSystemGlobbingVersion>10.0.3</FileSystemGlobbingVersion>
   </PropertyGroup>
 
   <!-- Config -->
@@ -22,4 +22,14 @@
     <PackageTags>nupkg;nuget-powertool</PackageTags>
     <Description>NupkgWrench is a cross platform command line tool to read and modify nupkgs.</Description>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn)</NoWarn>
+  </PropertyGroup>
+
+  <!-- Analyzers -->
+   <PropertyGroup>
+      <AnalysisMode>Recommended</AnalysisMode>
+      <NoWarn>$(NoWarn);CA2211;CA1308;CA2007;CA1051</NoWarn>
+   </PropertyGroup>
 </Project>

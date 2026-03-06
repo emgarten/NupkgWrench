@@ -32,7 +32,7 @@ namespace NupkgWrench
 
             cmd.OnExecute(() =>
             {
-                var inputs = new List<string>(argRoot.Values);
+                var inputs = argRoot.Values.Select(v => v!).ToList();
 
                 if (inputs.Count < 1)
                 {

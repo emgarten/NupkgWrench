@@ -50,7 +50,7 @@ namespace NupkgWrench
                     }
                 }
 
-                var inputs = new List<string>(argRoot.Values);
+                var inputs = argRoot.Values.Select(v => v!).ToList();
 
                 if (inputs.Count < 1)
                 {
@@ -59,7 +59,7 @@ namespace NupkgWrench
 
                 var nupkgPath = Util.GetSinglePackageWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
-                Directory.CreateDirectory(output.Value());
+                Directory.CreateDirectory(output.Value()!);
 
                 using (var stream = File.OpenRead(nupkgPath))
                 using (var zip = new ZipArchive(stream))
@@ -68,9 +68,9 @@ namespace NupkgWrench
 
                     foreach (var entry in zip.Entries)
                     {
-                        var path = Path.Combine(output.Value(), entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                        var path = Path.Combine(output.Value()!, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
                         var dir = Path.GetDirectoryName(path);
-                        Directory.CreateDirectory(dir);
+                        Directory.CreateDirectory(dir!);
 
                         log.LogInformation($"writing {path}");
 

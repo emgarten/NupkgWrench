@@ -54,8 +54,8 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 groups.Count().Should().Be(2);
-                groups["net45"].Packages.ShouldBeEquivalentTo(depGroup1.Packages);
-                groups["net46"].Packages.ShouldBeEquivalentTo(depGroup2.Packages);
+                groups["net45"].Packages.Should().BeEquivalentTo(depGroup1.Packages);
+                groups["net46"].Packages.Should().BeEquivalentTo(depGroup2.Packages);
             }
         }
 
@@ -101,8 +101,8 @@ namespace NupkgWrench.Tests
                 groups.Count().Should().Be(2);
                 groups["net45"].Packages.Single(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("5.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("5.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "build" });
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "content" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "build" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEquivalentTo(new[] { "content" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
             }
         }
@@ -149,10 +149,10 @@ namespace NupkgWrench.Tests
                 groups.Count().Should().Be(2);
                 groups["net45"].Packages.Single(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["net45"].Packages.Single(e => e.Id == "b").Include.Should().BeEmpty();
-                groups["net45"].Packages.Single(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
+                groups["net45"].Packages.Single(e => e.Id == "b").Exclude.Should().BeEquivalentTo(new[] { "compile", "runtime" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "build" });
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "build" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEquivalentTo(new[] { "compile", "runtime" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEmpty();
@@ -201,10 +201,10 @@ namespace NupkgWrench.Tests
                 groups.Count().Should().Be(2);
                 groups["net45"].Packages.Single(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["net45"].Packages.Single(e => e.Id == "b").Exclude.Should().BeEmpty();
-                groups["net45"].Packages.Single(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
+                groups["net45"].Packages.Single(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "compile", "runtime" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "compile", "runtime" });
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "content" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "compile", "runtime" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEquivalentTo(new[] { "content" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEmpty();
@@ -253,12 +253,12 @@ namespace NupkgWrench.Tests
                 groups.Count().Should().Be(2);
                 groups["net45"].Packages.Single(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["net45"].Packages.Single(e => e.Id == "b").Exclude.Should().BeEmpty();
-                groups["net45"].Packages.Single(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "compile" });
+                groups["net45"].Packages.Single(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "compile" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "compile" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "compile" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.ShouldBeEquivalentTo(new[] { "compile" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEquivalentTo(new[] { "compile" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEmpty();
             }
         }
@@ -308,7 +308,7 @@ namespace NupkgWrench.Tests
                 groups["net45"].Packages.Single(e => e.Id == "b").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEmpty();
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.ShouldBeEquivalentTo(new[] { "content" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEquivalentTo(new[] { "content" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEmpty();
@@ -360,10 +360,10 @@ namespace NupkgWrench.Tests
                 groups["net45"].Packages.Single(e => e.Id == "b").Include.Should().BeEmpty();
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Exclude.Should().BeEmpty();
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.ShouldBeEquivalentTo(new[] { "build" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "b").Include.Should().BeEquivalentTo(new[] { "build" });
                 groups["any"].Packages.FirstOrDefault(e => e.Id == "x").VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.ShouldBeEquivalentTo(new[] { "build" });
-                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.ShouldBeEquivalentTo(new[] { "content" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Include.Should().BeEquivalentTo(new[] { "build" });
+                groups["any"].Packages.FirstOrDefault(e => e.Id == "x").Exclude.Should().BeEquivalentTo(new[] { "content" });
             }
         }
 
@@ -591,8 +591,8 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 groups.Count().Should().Be(2);
-                groups["net45"].Packages.ShouldBeEquivalentTo(depGroup1.Packages);
-                groups["net46"].Packages.ShouldBeEquivalentTo(depGroup2.Packages);
+                groups["net45"].Packages.Should().BeEquivalentTo(depGroup1.Packages);
+                groups["net46"].Packages.Should().BeEquivalentTo(depGroup2.Packages);
             }
         }
 
@@ -635,8 +635,8 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 groups.Count().Should().Be(2);
-                groups["net45"].Packages.ShouldBeEquivalentTo(depGroup1.Packages);
-                groups["net46"].Packages.ShouldBeEquivalentTo(depGroup2.Packages);
+                groups["net45"].Packages.Should().BeEquivalentTo(depGroup1.Packages);
+                groups["net46"].Packages.Should().BeEquivalentTo(depGroup2.Packages);
             }
         }
 
@@ -679,7 +679,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 groups.Count().Should().Be(2);
-                groups["net45"].Packages.ShouldBeEquivalentTo(depGroup1.Packages);
+                groups["net45"].Packages.Should().BeEquivalentTo(depGroup1.Packages);
                 groups["net46"].Packages.Should().BeEmpty();
             }
         }
@@ -723,7 +723,7 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 groups.Count().Should().Be(2);
-                groups["net45"].Packages.ShouldBeEquivalentTo(depGroup1.Packages);
+                groups["net45"].Packages.Should().BeEquivalentTo(depGroup1.Packages);
                 groups["net46"].Packages.Should().BeEmpty();
             }
         }

@@ -60,7 +60,7 @@ namespace NupkgWrench
                         }
                     }
 
-                    var inputs = new List<string>(argRoot.Values);
+                    var inputs = argRoot.Values.Select(v => v!).ToList();
 
                     if (inputs.Count < 1)
                     {
@@ -74,16 +74,16 @@ namespace NupkgWrench
                         log.LogMinimal($"modifying {package}");
 
                         // Get nuspec file path
-                        string nuspecPath = null;
-                        XDocument nuspecXml = null;
+                        string? nuspecPath = null;
+                        XDocument? nuspecXml = null;
                         using (var packageReader = new PackageArchiveReader(package))
                         {
                             nuspecPath = packageReader.GetNuspecFile();
                             nuspecXml = XDocument.Load(packageReader.GetNuspec());
                         }
 
-                        var metadata = Util.GetMetadataElement(nuspecXml);
-                        var ns = metadata.GetDefaultNamespace().NamespaceName;
+                        var metadata = Util.GetMetadataElement(nuspecXml!);
+                        var ns = metadata!.GetDefaultNamespace().NamespaceName;
                         var contentFilesNode = metadata.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("contentFiles", StringComparison.OrdinalIgnoreCase));
 
                         if (contentFilesNode == null)
@@ -93,32 +93,32 @@ namespace NupkgWrench
                         }
 
                         var entryNode = new XElement(XName.Get("files", ns));
-                        entryNode.Add(new XAttribute(XName.Get("include"), include.Value()));
+                        entryNode.Add(new XAttribute(XName.Get("include"), include.Value()!));
 
                         if (exclude.HasValue())
                         {
-                            entryNode.Add(new XAttribute(XName.Get("exclude"), exclude.Value()));
+                            entryNode.Add(new XAttribute(XName.Get("exclude"), exclude.Value()!));
                         }
 
                         if (buildAction.HasValue())
                         {
-                            entryNode.Add(new XAttribute(XName.Get("buildAction"), buildAction.Value()));
+                            entryNode.Add(new XAttribute(XName.Get("buildAction"), buildAction.Value()!));
                         }
 
                         if (copyToOutput.HasValue())
                         {
-                            entryNode.Add(new XAttribute(XName.Get("copyToOutput"), copyToOutput.Value()));
+                            entryNode.Add(new XAttribute(XName.Get("copyToOutput"), copyToOutput.Value()!));
                         }
 
                         if (flatten.HasValue())
                         {
-                            entryNode.Add(new XAttribute(XName.Get("flatten"), flatten.Value()));
+                            entryNode.Add(new XAttribute(XName.Get("flatten"), flatten.Value()!));
                         }
 
                         contentFilesNode.AddFirst(entryNode);
 
                         // Update zip
-                        Util.AddOrReplaceZipEntry(package, nuspecPath, nuspecXml, log);
+                        Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);
                     }
 
                     return 0;

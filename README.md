@@ -1,6 +1,6 @@
 # What is NupkgWrench?
 
-NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs. 
+NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs.
 
 The jump between automatically packing a csproj and building a nupkg from scratch is difficult. NupkgWrench lets you modify nupkgs, make simple changes such as add/remove files, or update dependencies without having to author every part of the package.
 
@@ -8,17 +8,15 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 
 ## Getting NupkgWrench
 
-### Manually getting nupkgwrench.exe (Windows and Mono)
-1. Download the latest nupkg from [NupkgWrenchExe on NuGet.org](https://www.nuget.org/packages/NupkgWrenchExe)
-1. Extract *tools/NupkgWrench.exe* to a local folder and run it.
-
-### NuGet.exe install
-1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
-1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
-
 ### Install dotnet global tool (recommended)
 1. `dotnet tool install -g nupkgwrench`
 1. `nupkgwrench` should now be on your *PATH*
+
+### NuGet.exe install for nupkgwrench.exe
+1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
+1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
+
+
 
 ## Build Status
 
@@ -127,7 +125,7 @@ c:\work\nupkgs\packageX.2.0.0-beta.nupkg
 
 ### Convert to release
 
-Converting a package from a pre-release version to a stable version, or just changing the version to another version completely can be a tedious task. NupkgWrench automates this by first updating the version of each package passed in, then updating all dependency version ranges that contained the previous versions. 
+Converting a package from a pre-release version to a stable version, or just changing the version to another version completely can be a tedious task. NupkgWrench automates this by first updating the version of each package passed in, then updating all dependency version ranges that contained the previous versions.
 
 ```
 > NupkgWrench release c:\nupkgs c:\nupkgs2
@@ -187,7 +185,7 @@ Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
 ```
 > NupkgWrench files emptygroup c:\nupkgs --path lib/net45/_._
 > NupkgWrench nuspec dependencies emptygroup c:\nupkgs --framework net45
-``` 
+```
 
 ## Contributing
 
@@ -196,6 +194,6 @@ We welcome contributions. If you are interested in contributing you can report a
 ### License
 [MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)
 
-# Related projects 
+# Related projects
 
 NupkgWrench for VSTS/TFS [NupgkWrenchExtension](https://github.com/dschuermans/NupgkWrenchExtension)

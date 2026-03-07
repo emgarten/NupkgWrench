@@ -108,7 +108,10 @@ namespace NupkgWrench
                     {
                         using (var memoryStream = new MemoryStream())
                         {
-                            symbolsReader.GetStream(pdbFile).CopyTo(memoryStream);
+                            using (var pdbStream = symbolsReader.GetStream(pdbFile))
+                            {
+                                pdbStream.CopyTo(memoryStream);
+                            }
 
                             Util.AddOrReplaceZipEntry(zip, packagePath, pdbFile, memoryStream, log);
                         }

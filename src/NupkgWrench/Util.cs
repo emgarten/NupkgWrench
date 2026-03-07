@@ -398,8 +398,9 @@ namespace NupkgWrench
             else
             {
                 // Windows, Verify a : comes before a slash
-                return possiblePattern.IndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar })
-                    > possiblePattern.IndexOf(':');
+                var slashIndex = possiblePattern.IndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+                var colonIndex = possiblePattern.IndexOf(':');
+                return colonIndex >= 0 && slashIndex > colonIndex;
             }
         }
 
@@ -415,10 +416,10 @@ namespace NupkgWrench
                     }
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException && ex is not OutOfMemoryException)
             {
                 // Ignore bad packages, these might be only partially written to disk.
-                Debug.Fail("Failed to get identity");
+                Debug.Fail($"Failed to get identity for {path}: {ex.Message}");
             }
 
             return null;

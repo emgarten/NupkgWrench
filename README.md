@@ -1,6 +1,6 @@
 # What is NupkgWrench?
 
-NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs. 
+NupkgWrench is a cross platform command line tool for listing and modifying nupkgs and nuspecs.
 
 The jump between automatically packing a csproj and building a nupkg from scratch is difficult. NupkgWrench lets you modify nupkgs, make simple changes such as add/remove files, or update dependencies without having to author every part of the package.
 
@@ -8,23 +8,30 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 
 ## Getting NupkgWrench
 
-### Manually getting nupkgwrench.exe (Windows and Mono)
-1. Download the latest nupkg from [NupkgWrenchExe on NuGet.org](https://www.nuget.org/packages/NupkgWrenchExe)
-1. Extract *tools/NupkgWrench.exe* to a local folder and run it.
+### Prerequisites
 
-### NuGet.exe install
-1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
-1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
+NupkgWrench runs on Windows, Linux, and macOS. To install as a dotnet global tool, the [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or later is required.
 
 ### Install dotnet global tool (recommended)
 1. `dotnet tool install -g nupkgwrench`
 1. `nupkgwrench` should now be on your *PATH*
+
+### NuGet.exe install for nupkgwrench.exe
+1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
+1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
+
+
 
 ## Build Status
 
 | Github |
 | --- |
 | [![.NET test](https://github.com/emgarten/NupkgWrench/actions/workflows/dotnet.yml/badge.svg)](https://github.com/emgarten/NupkgWrench/actions/workflows/dotnet.yml) |
+
+| | |
+| --- | --- |
+| NuGet.org | [![NuGet](https://img.shields.io/nuget/v/nupkgwrench.svg)](https://www.nuget.org/packages/nupkgwrench) |
+| Release Notes | [ReleaseNotes.md](ReleaseNotes.md) |
 
 ## Features
 * Change the version, release label, or convert packages from pre-release to stable across a folder of nupkgs. NupkgWrench will modify all dependency version ranges to match the new package versions.
@@ -41,7 +48,8 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 | ------------------ | ----------- |
 | ``compress`` | Create a nupkg from a folder. |
 | ``extract``  | Extract a nupkg to a folder. |
-| ``files add`` | Add a file to a nupkg.
+| ``files add`` | Add a file to a nupkg. |
+| ``files copysymbols`` | Copy pdb symbol files from .symbols.nupkg files into the primary package next to the matching dlls. |
 | ``files emptyfolder`` | Add an empty folder _._ placeholder to a nupkg, existing files in the folder will be removed. |
 | ``files list`` | List files inside a nupkg. |
 | ``files remove`` | Remove files from a nupkg. |
@@ -52,6 +60,7 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 | ``nuspec dependencies remove`` | Remove a package dependency. |
 | ``nuspec dependencies modify`` | Modify a dependency or all package dependencies. Change the version, include, or exclude properties. |
 | ``nuspec edit`` | Modifies or adds a top level property to the nuspec in a package. |
+| ``nuspec frameworkassemblies add`` | Add framework assemblies to the nuspec file for desktop frameworks. |
 | ``nuspec frameworkassemblies clear`` | Clear all framework assemblies from a nuspec file. |
 | ``nuspec show`` | Display the XML contents of a nuspec file from a package. |
 | ``id`` | Display the package id of a nupkg. |
@@ -61,17 +70,15 @@ NupkgWrench also makes it easy to search for and list nupkgs, filtering on id/ve
 | ``validate`` | Verify a nupkg can be read using NuGet's package reader. |
 | ``version`` | Display the package version of a nupkg. |
 
-# Contributing
-
-Need a new command? Send a pull request! We're happy to accept new commands and fixes.
-
 # Quick start
+
+> **Note:** The examples below use Windows-style paths (e.g., `c:\nupkgs`). On Linux and macOS, use forward-slash paths instead (e.g., `./nupkgs`).
 
 ### Inspecting a nupkg
 
 NupkgWrench contains several basic commands for retrieving metadata from nupkgs. This info is written out to the console without any extra data to make it easy for scripts to read and parse the data.
 
-```
+```shell
 > NupkgWrench id packageA.1.0.0.nupkg
 packageA
 
@@ -86,15 +93,15 @@ lib/net45/a.dll
 > NupkgWrench nuspec show packageA.1.0.0.nupkg > nuspec.xml
 ```
 
-### Bulk editting packages and filters
+### Bulk editing packages and filters
 
-Most commands for modifying packages can take a set of file, directory paths, and file globbing patterns. Options are provided to filter on id, version, and symbol packages. This let's NupkgWrench do the work of finding the right packages.
+Most commands for modifying packages can take a set of file, directory paths, and file globbing patterns. Options are provided to filter on id, version, and symbol packages. This lets NupkgWrench do the work of finding the right packages.
 
 The list command makes it easy to see what an edit command will operate on, it simply lists all matching nupkg files that meet the filter criteria.
 
 Filters: ``--id``, ``--version``, ``--exclude-symbols``, ``--highest-version``
 
-```
+```shell
 > NupkgWrench list c:\nupkgs c:\nupkgs2 c:\nupkgs3\packageA.1.0.0.nupkg d:\morenupkgs
 c:\nupkgs\packageX.2.0.0-beta.nupkg
 c:\nupkgs3\packageA.1.0.0.nupkg
@@ -106,7 +113,7 @@ c:\nupkgs\packageX.2.0.0-beta.nupkg
 
 Both the id and version filters may contain wildcards. For versions the wildcards are applied to both the exact version string in the package nuspec and the normalized version, making it easy to work with package versions that contain unneeded leading zeros.
 
-```
+```shell
 > NupkgWrench list c:\nupkgs c:\nupkgs2 c:\nupkgs3\packageA.1.0.0.nupkg d:\morenupkgs --id p*age* --version *-beta*
 c:\nupkgs\packageX.2.0.0-beta.nupkg
 d:\morenupkgs\packageZ.3.0.0-beta.1.2.nupkg
@@ -117,7 +124,7 @@ c:\nupkgs3\packageA.1.0.0.nupkg
 
 File globbing may be used along with other filters, the ``**`` and ``*`` patterns can be used to search all sub directories and partial file names. Filters may be applied on top of these globbing patterns to give better control over the selected nupkgs.
 
-```
+```shell
 > NupkgWrench list c:\work\**\packageX*2.*.nupkg --highest-version
 c:\work\nupkgs\packageX.2.0.0-beta.nupkg
 
@@ -127,9 +134,9 @@ c:\work\nupkgs\packageX.2.0.0-beta.nupkg
 
 ### Convert to release
 
-Converting a package from a pre-release version to a stable version, or just changing the version to another version completely can be a tedious task. NupkgWrench automates this by first updating the version of each package passed in, then updating all dependency version ranges that contained the previous versions. 
+Converting a package from a pre-release version to a stable version, or just changing the version to another version completely can be a tedious task. NupkgWrench automates this by first updating the version of each package passed in, then updating all dependency version ranges that contained the previous versions.
 
-```
+```shell
 > NupkgWrench release c:\nupkgs c:\nupkgs2
 processing c:\nupkgs\packageA.2.0.0-beta.nupkg
 packageA.2.0.0-beta -> packageA.2.0.0
@@ -142,7 +149,7 @@ c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0.nupkg
 
 ``--label`` can be used to keep the version number the same while only updating or adding a pre-release label.
 
-```
+```shell
 > NupkgWrench release c:\nupkgs c:\nupkgs2 --label rc1
 processing c:\nupkgs\packageA.2.0.0-beta.nupkg
 packageA.2.0.0-beta -> packageA.2.0.0-rc1
@@ -158,7 +165,7 @@ c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0-rc1.nupkg
 NuGet normalizes package versions to three parts. To convert back to a four part version number use the ``release`` command with `--four-part-version`.
 This command can be used to revert version normalization done in NuGet pack. Since nupkgwrench can work on a directory of nupkgs or filter by id, this provides an easy way to update package versions without needing to discover the original version of the nupkg first in build scripts.
 
-```
+```shell
 > NupkgWrench release c:\nupkgs --four-part-version
 processing c:\nupkgs\packageA.2.0.0.nupkg
 packageA.2.0.0 -> packageA.2.0.0.0
@@ -167,7 +174,7 @@ c:\nupkgs\packageA.2.0.0.nupkg -> packageA.2.0.0.0.nupkg
 
 ``--new-version`` allows setting the version directly to apply any non-normalized version change.
 
-```
+```shell
 > NupkgWrench release c:\nupkgs --new-version 1.00
 processing c:\nupkgs\packageA.1.0.0.nupkg
 packageA.1.0.0 -> packageA.1.00
@@ -179,23 +186,42 @@ c:\nupkgs\packageA.1.0.0.nupkg -> packageA.1.00.nupkg
 NuGet.exe pack and dotnet pack typically create a nupkg with everything needed, but for advanced scenarios it is sometimes required to pack using a nuspec file. To avoid creating a nupkg with all the needed dependencies and files NupkgWrench can be used to make simple changes on top of existing nupkgs.
 
 Adding a contentFiles entry from the command line:
-```
+```shell
 > NupkgWrench nuspec contentfiles add c:\nupkgs --include **/*.* --build-action none --copy-to-output true
 ```
 
 Adding an ``_._`` file to make a nupkg compatible with additional frameworks.
-```
-> NupkgWrench files emptygroup c:\nupkgs --path lib/net45/_._
+```shell
+> NupkgWrench files emptyfolder c:\nupkgs --path lib/net45/_._
 > NupkgWrench nuspec dependencies emptygroup c:\nupkgs --framework net45
-``` 
+```
 
 ## Contributing
 
-We welcome contributions. If you are interested in contributing you can report an issue or open a pull request to propose a change.
+We welcome contributions! Need a new command or want to fix a bug? Send a pull request — we're happy to accept new commands and fixes.
+
+If you are interested in contributing you can [report an issue](https://github.com/emgarten/NupkgWrench/issues) or open a pull request to propose a change.
+
+### Building from source
+
+Clone the repository and run the build script for your platform:
+
+```shell
+# Linux / macOS
+./build.sh
+
+# Windows (PowerShell)
+./build.ps1
+
+# Windows (cmd)
+build.cmd
+```
+
+The build script restores dependencies, builds the solution, runs tests, and creates NuGet packages under the `artifacts/` directory.
 
 ### License
 [MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)
 
-# Related projects 
+# Related projects
 
-NupkgWrench for VSTS/TFS [NupgkWrenchExtension](https://github.com/dschuermans/NupgkWrenchExtension)
+NupkgWrench for Azure DevOps [NupgkWrenchExtension](https://github.com/dschuermans/NupgkWrenchExtension)

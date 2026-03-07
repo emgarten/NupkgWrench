@@ -281,6 +281,35 @@ namespace NupkgWrench.Tests
             }
         }
 
+        // Windows-style rooted path tests (backslash = '\\', forward slash = '/')
+        [Theory]
+        [InlineData(@"\foo\*.nupkg", true)]
+        [InlineData(@"\\server\share\*.nupkg", true)]
+        [InlineData(@"\\server\share\packages\*.nupkg", true)]
+        [InlineData(@"C:\foo\*.nupkg", true)]
+        [InlineData(@"D:\packages\*.nupkg", true)]
+        [InlineData(@"foo\*.nupkg", false)]
+        [InlineData(@"sub\folder\*.nupkg", false)]
+        [InlineData(@"*.nupkg", false)]
+        [InlineData("", false)]
+        public void Util_IsPathRooted_Windows(string pattern, bool expected)
+        {
+            Util.IsPathRooted(pattern, '\\', '/').Should().Be(expected);
+        }
+
+        // Unix-style rooted path tests (forward slash = '/')
+        [Theory]
+        [InlineData("/foo/*.nupkg", true)]
+        [InlineData("/usr/share/packages/*.nupkg", true)]
+        [InlineData("foo/*.nupkg", false)]
+        [InlineData("sub/folder/*.nupkg", false)]
+        [InlineData("*.nupkg", false)]
+        [InlineData("", false)]
+        public void Util_IsPathRooted_Unix(string pattern, bool expected)
+        {
+            Util.IsPathRooted(pattern, '/', '/').Should().Be(expected);
+        }
+
         private static void CreatePackages(string workingDir)
         {
             var testPackageA = new TestNupkg()

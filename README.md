@@ -30,7 +30,7 @@ NupkgWrench runs on Windows, Linux, and macOS. To install as a dotnet global too
 
 | | |
 | --- | --- |
-| NuGet.org | [nupkgwrench](https://www.nuget.org/packages/nupkgwrench) |
+| NuGet.org | [![NuGet](https://img.shields.io/nuget/v/nupkgwrench.svg)](https://www.nuget.org/packages/nupkgwrench) |
 | Release Notes | [ReleaseNotes.md](ReleaseNotes.md) |
 
 ## Features

@@ -390,15 +390,27 @@ namespace NupkgWrench
 
         private static bool IsPathRooted(string possiblePattern)
         {
-            if (Path.DirectorySeparatorChar == '/')
+            return IsPathRooted(possiblePattern, Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        }
+
+        public static bool IsPathRooted(string possiblePattern, char dirSeparator, char altDirSeparator)
+        {
+            if (dirSeparator == '/')
             {
                 // Non-windows, Verify starts with a /
                 return possiblePattern.StartsWith('/');
             }
             else
             {
-                // Windows, Verify a : comes before a slash
-                var slashIndex = possiblePattern.IndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+                // Windows: rooted if it starts with a slash/backslash (root-relative or UNC)
+                // or has a drive colon before the first slash (e.g. C:\...)
+                if (possiblePattern.Length > 0
+                    && (possiblePattern[0] == dirSeparator || possiblePattern[0] == altDirSeparator))
+                {
+                    return true;
+                }
+
+                var slashIndex = possiblePattern.IndexOfAny(new char[] { dirSeparator, altDirSeparator });
                 var colonIndex = possiblePattern.IndexOf(':');
                 return colonIndex >= 0 && slashIndex > colonIndex;
             }

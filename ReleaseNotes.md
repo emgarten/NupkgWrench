@@ -1,5 +1,12 @@
 # Release Notes
 
+## 5.1.0
+* Fixed `nupkgwrench` failing to start when installed with `dotnet tool install --allow-roll-forward`
+* Added readmes to the NupkgWrench and NupkgWrenchExe packages
+* NupkgWrench.exe in NupkgWrenchExe is now built with .NET 10
+* Update NuGet.* packages to 7.9.0
+* Update misc dependency packages
+
 ## 5.0.0
 * Add net10.0 support, remove net6.0
 * Update NuGet.* packages to 7.3.0

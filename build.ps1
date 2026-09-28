@@ -5,41 +5,109 @@ param (
     [string]$Configuration = "Release"
 )
 
-$RepoName = "NupkgWrench"
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+
 $RepoRoot = $PSScriptRoot
-pushd $RepoRoot
+$ArtifactsDir = Join-Path $RepoRoot "artifacts"
+$DotnetDir = Join-Path $RepoRoot ".dotnet"
+$IsWindowsOS = $env:OS -eq "Windows_NT"
 
-# Load common build script helper methods
-. "$PSScriptRoot\build\common\common.ps1"
+Function Invoke-Exe {
+    param(
+        [string]$Exe,
+        [string[]]$Arguments
+    )
 
-# Download tools
-Install-CommonBuildTools $RepoRoot
+    Write-Host "[Exec] $Exe $Arguments" -ForegroundColor Cyan
+    & $Exe @Arguments
 
-# Clean and write git info
-Remove-Artifacts $RepoRoot
-Invoke-DotnetMSBuild $RepoRoot ("build\build.proj", "/t:Clean;WriteGitInfo", "/p:Configuration=$Configuration")
-
-# Build Exe
-Invoke-DotnetExe $RepoRoot ("publish", "--force", "-r", "win-x64", "-p:PublishSingleFile=true", "-p:PublishTrimmed=false", "--self-contained", "true", "-f", "net8.0", "-o", (Join-Path $RepoRoot "artifacts\publish"), (Join-Path $RepoRoot "\src\NupkgWrench\NupkgWrench.csproj"))
-
-# Restore
-Invoke-DotnetMSBuild $RepoRoot ("build\build.proj", "/t:Restore", "/p:Configuration=$Configuration")
-
-# Run main build
-$buildTargets = "Build"
-
-if (-not $SkipTests)
-{
-    $buildTargets += ";Test"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed with exit code $($LASTEXITCODE): $Exe $Arguments"
+    }
 }
 
-if (-not $SkipPack)
-{
-    $buildTargets += ";Pack"
+# True if dotnet has the SDK from global.json and the runtimes used by the tests
+Function Test-Dotnet([string]$Dotnet) {
+    if (-not $Dotnet -or -not (Test-Path $Dotnet)) {
+        return $false
+    }
+
+    $ErrorActionPreference = "Continue"
+    & $Dotnet --version *> $null
+
+    if ($LASTEXITCODE -ne 0) {
+        return $false
+    }
+
+    $runtimes = (& $Dotnet --list-runtimes) -join "`n"
+    return $runtimes -match "(?m)^Microsoft\.NETCore\.App 8\." -and $runtimes -match "(?m)^Microsoft\.NETCore\.App 9\."
 }
 
-# Run build.proj
-Invoke-DotnetMSBuild $RepoRoot ("build\build.proj", "/t:$buildTargets", "/p:Configuration=$Configuration")
+# Install the SDK from global.json and the runtimes used by the tests to .dotnet
+Function Install-Dotnet {
+    New-Item -ItemType Directory -Force -Path $DotnetDir | Out-Null
+    $installScript = Join-Path $DotnetDir "dotnet-install.ps1"
+    Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $installScript -UseBasicParsing
 
-popd
+    & $installScript -JsonFile (Join-Path $RepoRoot "global.json") -InstallDir $DotnetDir -NoPath
+    & $installScript -Runtime dotnet -Channel 8.0 -InstallDir $DotnetDir -NoPath
+    & $installScript -Runtime dotnet -Channel 9.0 -InstallDir $DotnetDir -NoPath
+}
+
+$originalPath = $env:PATH
+$originalDotnetRoot = $env:DOTNET_ROOT
+Push-Location $RepoRoot
+
+try {
+    $env:DOTNET_NOLOGO = "1"
+    $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+    $env:MSBUILDDISABLENODEREUSE = "1"
+
+    # Prefer dotnet on PATH, otherwise use the repo local .dotnet
+    $DotnetExe = (Get-Command dotnet -CommandType Application -TotalCount 1 -ErrorAction Ignore).Path
+
+    if (-not (Test-Dotnet $DotnetExe)) {
+        $DotnetExe = Join-Path $DotnetDir $(if ($IsWindowsOS) { "dotnet.exe" } else { "dotnet" })
+
+        if (-not (Test-Dotnet $DotnetExe)) {
+            Install-Dotnet
+        }
+
+        $env:DOTNET_ROOT = $DotnetDir
+        $env:PATH = "$DotnetDir$([IO.Path]::PathSeparator)$env:PATH"
+    }
+
+    Invoke-Exe $DotnetExe @("--info")
+
+    if (Test-Path $ArtifactsDir) {
+        Remove-Item $ArtifactsDir -Force -Recurse
+    }
+
+    Invoke-Exe $DotnetExe @("msbuild", "build/version.proj", "-nologo", "-v:m")
+    Invoke-Exe $DotnetExe @("build", "NupkgWrench.slnx", "-c", $Configuration)
+
+    if ($IsWindowsOS) {
+        # NupkgWrench.exe for the NupkgWrenchExe package and the CmdExe tests
+        Invoke-Exe $DotnetExe @("publish", "src/NupkgWrench/NupkgWrench.csproj", "-c", $Configuration, "-f", "net10.0", "-p:PublishSingleFile=true", "-o", (Join-Path $ArtifactsDir "publish"))
+    }
+
+    if (-not $SkipPack) {
+        Invoke-Exe $DotnetExe @("pack", "NupkgWrench.slnx", "-c", $Configuration, "--no-build")
+
+        if ($IsWindowsOS) {
+            Invoke-Exe $DotnetExe @("pack", "src/NupkgWrench/NupkgWrench.csproj", "-c", $Configuration, "--no-build", "-p:PackageId=NupkgWrenchExe")
+        }
+    }
+
+    if (-not $SkipTests) {
+        Invoke-Exe $DotnetExe @("test", "--solution", "NupkgWrench.slnx", "-c", $Configuration, "--no-build", "--results-directory", (Join-Path $ArtifactsDir "TestResults"), "--report-trx", "--hangdump", "--hangdump-timeout", "20m", "--hangdump-type", "Mini")
+    }
+}
+finally {
+    Pop-Location
+    $env:PATH = $originalPath
+    $env:DOTNET_ROOT = $originalDotnetRoot
+}
+
 Write-Host "Success!"

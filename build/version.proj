@@ -29,6 +29,11 @@
       <GitCommit />
     </PropertyGroup>
 
+    <!-- Release builds check out a tag, leave the branch out of the package metadata instead of using HEAD -->
+    <PropertyGroup Condition="'$(GitBranch)' == 'HEAD'">
+      <GitBranch />
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(GitExitCode)' == '0'">
       <Version>$(GitTag.TrimStart('v'))</Version>
     </PropertyGroup>

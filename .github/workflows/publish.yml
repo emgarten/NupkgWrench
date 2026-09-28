@@ -40,7 +40,8 @@ jobs:
       with:
         user: emgarten
     - name: Publish
-      run: dotnet nuget push "artifacts/nupkgs/*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+      # NuGet on Windows only expands the wildcard when the path uses backslashes
+      run: dotnet nuget push "artifacts\nupkgs\*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
       shell: pwsh
       env:
         NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}

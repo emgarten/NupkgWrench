@@ -16,6 +16,31 @@ NupkgWrench runs on Windows, Linux, and macOS. To install as a dotnet global too
 1. `dotnet tool install -g nupkgwrench`
 1. `nupkgwrench` should now be on your *PATH*
 
+In CI scripts, pin a major version so a new major release can't change your build unexpectedly:
+
+```
+dotnet tool install -g nupkgwrench --version "5.*"
+```
+
+### Install as a local tool
+
+A [local tool manifest](https://learn.microsoft.com/dotnet/core/tools/local-tools-how-to-use) pins an exact NupkgWrench version for a repository:
+
+```
+dotnet new tool-manifest
+dotnet tool install nupkgwrench
+```
+
+Commit the *dotnet-tools.json* file it creates, then run `dotnet tool restore` and use `dotnet nupkgwrench`.
+
+### Run without installing
+
+With the .NET 10 SDK or later, [dnx](https://learn.microsoft.com/dotnet/core/tools/dotnet-tool-exec) downloads and runs NupkgWrench in one step:
+
+```
+dnx nupkgwrench list ./nupkgs
+```
+
 ### NuGet.exe install for nupkgwrench.exe
 1. *nuget.exe install NupkgWrenchExe -ExcludeVersion -Source https://api.nuget.org/v3/index.json*
 1. Run *NupkgWrenchExe/tools/NupkgWrench.exe*
@@ -217,7 +242,7 @@ Clone the repository and run the build script for your platform:
 build.cmd
 ```
 
-The build script restores dependencies, builds the solution, runs tests, and creates NuGet packages under the `artifacts/` directory.
+The build script restores dependencies, builds the solution, runs tests, and creates NuGet packages under the `artifacts/` directory. It uses the .NET SDK version from `global.json`. If `dotnet` on your *PATH* doesn't have that SDK and the .NET 8 and 9 runtimes used by the tests, the script installs them to `.dotnet/`.
 
 ### License
 [MIT License](https://github.com/emgarten/NupkgWrench/blob/main/LICENSE.md)

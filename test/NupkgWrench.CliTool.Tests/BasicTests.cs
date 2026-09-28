@@ -1,28 +1,27 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using FluentAssertions;
+using AwesomeAssertions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Test.Helpers;
 using Test.Common;
+using Xunit;
 
 namespace NupkgWrench.CliTool.Tests
 {
     public class BasicTests
     {
         /// <summary>
-        /// Add a DotNetCliToolReference to NupkgWrench
-        /// Restore the project
-        /// Run dotnet nupkgwrench to verify the tool is working
-        /// Currently the nupkg is only produced on Windows,
-        /// for that reason this test only runs on windows.
+        /// Dotnet install nupkgwrench from the nupkg created by build.ps1 or build.sh
+        /// Run nupkgwrench to verify the tool is working
         /// </summary>
-        [WindowsFact]
+        [Fact]
         public async Task RunToolVerifySuccess()
         {
             using (var testContext = new TestFolder())
@@ -31,10 +30,9 @@ namespace NupkgWrench.CliTool.Tests
                 Directory.CreateDirectory(dir);
 
                 var dotnetExe = GetDotnetPath();
-                var exeFile = new FileInfo(dotnetExe);
-                var nupkgsFolder = Path.Combine(exeFile.Directory.Parent.FullName, "artifacts", "nupkgs");
+                var nupkgsFolder = CmdRunner.GetPath("artifacts/nupkgs");
 
-                var packages = LocalFolderUtility.GetPackagesV2(nupkgsFolder, "NupkgWrench", NullLogger.Instance).ToList();
+                var packages = LocalFolderUtility.GetPackagesV2(nupkgsFolder, "NupkgWrench", NullLogger.Instance, TestContext.Current.CancellationToken).ToList();
 
                 if (packages.Count < 1)
                 {
@@ -50,7 +48,7 @@ namespace NupkgWrench.CliTool.Tests
                 var result = await CmdRunner.RunAsync(dotnetExe, testContext.Root, $"tool install nupkgwrench --version {version} --add-source {nupkgsFolder} --tool-path {dir}");
                 result.Success.Should().BeTrue(result.AllOutput);
 
-                var dllPath = Path.Combine(dir, ".store", "nupkgwrench", version, "nupkgwrench", version, "tools", "net8.0", "any", "NupkgWrench.dll");
+                var dllPath = Path.Combine(dir, ".store", "nupkgwrench", version, "nupkgwrench", version, "tools", "net10.0", "any", "NupkgWrench.dll");
 
                 if (!File.Exists(dllPath))
                 {
@@ -66,14 +64,10 @@ namespace NupkgWrench.CliTool.Tests
 
         private static string GetDotnetPath()
         {
-            var dotnetExeRelativePath = ".cli/dotnet.exe";
+            // Use the dotnet install running the tests: <root>/shared/Microsoft.NETCore.App/<version>/
+            var dotnetRoot = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", ".."));
 
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                dotnetExeRelativePath = ".cli/dotnet";
-            }
-
-            return CmdRunner.GetPath(dotnetExeRelativePath);
+            return Path.Combine(dotnetRoot, RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet");
         }
 
         private static void Delete(DirectoryInfo dir)

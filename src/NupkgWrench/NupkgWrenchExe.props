@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Path to NupkgWrench.exe for use in MSBuild targets -->
+    <NupkgWrench>$(MSBuildThisFileDirectory)..\tools\NupkgWrench.exe</NupkgWrench>
+  </PropertyGroup>
+</Project>

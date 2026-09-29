@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using NuGet.Packaging;
@@ -280,6 +281,78 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 exitCode.Should().Be(0, log.GetMessages());
+            }
+        }
+
+        [Fact]
+        public async Task GivenThatICopySymbolsWithDeleteVerifySymbolsPackageIsRemoved()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+                var nuspec = new TestNuspec()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                var nupkg = nuspec.CreateNupkg();
+                nupkg.Files.Clear();
+                nupkg.AddFile("lib/net45/a.dll");
+                var path = nupkg.Save(workingDir);
+
+                var nuspecSymbols = new TestNuspec()
+                {
+                    Id = "a",
+                    Version = "1.0.0",
+                    IsSymbolPackage = true
+                };
+                var nupkgSymbols = nuspecSymbols.CreateNupkg();
+                nupkgSymbols.Files.Clear();
+                nupkgSymbols.AddFile("lib/net45/a.dll");
+                nupkgSymbols.AddFile("lib/net45/a.pdb");
+                var symbolsPath = nupkgSymbols.Save(workingDir);
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "copysymbols", workingDir, "-d" }, log);
+                var after = GetNupkgFiles(path.FullName);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+
+                after.Should().Contain("lib/net45/a.pdb");
+                File.Exists(symbolsPath.FullName).Should().BeFalse();
+                File.Exists(path.FullName).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task GivenThatICopySymbolsWithDeleteAndNoPrimaryVerifySymbolsPackageIsKept()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+                var nuspec = new TestNuspec()
+                {
+                    Id = "a",
+                    Version = "1.0.0",
+                    IsSymbolPackage = true
+                };
+                var nupkg = nuspec.CreateNupkg();
+                nupkg.Files.Clear();
+                nupkg.AddFile("lib/net45/a.dll");
+                nupkg.AddFile("lib/net45/a.pdb");
+                var path = nupkg.Save(workingDir);
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "copysymbols", workingDir, "-d" }, log);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+
+                log.GetMessages().Should().Contain("Missing primary package for a.1.0.0");
+                File.Exists(path.FullName).Should().BeTrue();
             }
         }
 

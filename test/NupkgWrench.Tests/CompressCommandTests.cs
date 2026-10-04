@@ -100,6 +100,27 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task GivenThatICompressWithoutAFolderVerifyFailure()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var outputDir = Path.Combine(workingDir.Root, "output");
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "compress", "-o", outputDir }, log);
+
+                // Assert
+                exitCode.Should().Be(1);
+                log.GetMessages().Should().Contain("Specify the path to a folder containing nupkg files.");
+                log.GetMessages().Should().NotContain("NullReferenceException");
+                Directory.Exists(outputDir).Should().BeFalse();
+            }
+        }
+
+        [Fact]
         public async Task GivenThatICompressAMissingFolderVerifyFailure()
         {
             using (var workingDir = new TestFolder())

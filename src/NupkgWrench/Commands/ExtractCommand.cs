@@ -78,6 +78,13 @@ namespace NupkgWrench
 
                     foreach (var (entry, path) in files)
                     {
+                        // Directory entries such as lib/ have no file to write.
+                        if (Path.EndsInDirectorySeparator(path))
+                        {
+                            Directory.CreateDirectory(path);
+                            continue;
+                        }
+
                         var dir = Path.GetDirectoryName(path);
                         Directory.CreateDirectory(dir!);
 
@@ -124,7 +131,9 @@ namespace NupkgWrench
                 var path = Path.GetFullPath(Path.Combine(outputRoot, relativePath));
                 var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
-                if (path.Length > outputRoot.Length && path.StartsWith(outputRoot, comparison))
+                // Directory entries such as ./ resolve to the output folder itself.
+                if (path.StartsWith(outputRoot, comparison)
+                    && (path.Length > outputRoot.Length || Path.EndsInDirectorySeparator(relativePath)))
                 {
                     return path;
                 }

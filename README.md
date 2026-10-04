@@ -166,9 +166,9 @@ Converting a package from a pre-release version to a stable version, or just cha
 processing c:\nupkgs\packageA.2.0.0-beta.nupkg
 packageA.2.0.0-beta -> packageA.2.0.0
 dependency packageB [1.0.0-beta, ) -> [1.0.0, )
-c:\nupkgs\packageA.2.0.0-beta.nupkg -> packageA.2.0.0.nupkg
 processing c:\nupkgs\packageB.1.0.0-beta.nupkg
 packageB.1.0.0-beta -> packageB.1.0.0
+c:\nupkgs\packageA.2.0.0-beta.nupkg -> packageA.2.0.0.nupkg
 c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0.nupkg
 ```
 
@@ -179,9 +179,9 @@ c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0.nupkg
 processing c:\nupkgs\packageA.2.0.0-beta.nupkg
 packageA.2.0.0-beta -> packageA.2.0.0-rc1
 dependency packageB [1.0.0-beta, ) -> [1.0.0-rc1, )
-c:\nupkgs\packageA.2.0.0-beta.nupkg -> packageA.2.0.0-rc1.nupkg
 processing c:\nupkgs\packageB.1.0.0-beta.nupkg
 packageB.1.0.0-beta -> packageB.1.0.0-rc1
+c:\nupkgs\packageA.2.0.0-beta.nupkg -> packageA.2.0.0-rc1.nupkg
 c:\nupkgs\packageB.1.0.0-beta.nupkg -> packageB.1.0.0-rc1.nupkg
 ```
 

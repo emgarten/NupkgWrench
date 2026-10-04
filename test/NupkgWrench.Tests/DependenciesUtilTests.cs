@@ -19,6 +19,11 @@ namespace NupkgWrench.Tests
         [InlineData("net8.0")]
         [InlineData("net10.0")]
         [InlineData("uap10.0.16299")]
+        [InlineData("net6.0-windows")]
+        [InlineData("net8.0-android34.0")]
+        [InlineData("net8.0-windows10.0.19041")]
+        [InlineData("net40-client")]
+        [InlineData("portable-net45+win8")]
         public void GivenAFrameworkVerifyTheGroupTargetFrameworkRoundTrips(string framework)
         {
             // Arrange

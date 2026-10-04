@@ -45,6 +45,53 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task GivenThatIExtractANupkgWithDirectoryEntriesVerifyAllFilesAndFoldersAreWritten()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var zipPath = Path.Combine(workingDir.Root, "a.1.0.0.nupkg");
+
+                using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+                {
+                    using (var entryStream = zip.CreateEntry("a.nuspec").Open())
+                    {
+                        new TestNuspec()
+                        {
+                            Id = "a",
+                            Version = "1.0.0"
+                        }.Create().Save(entryStream);
+                    }
+
+                    zip.CreateEntry("lib/");
+                    zip.CreateEntry("lib/net45/");
+
+                    using (var entryStream = zip.CreateEntry("lib/net45/a.dll").Open())
+                    {
+                        entryStream.Write(new byte[] { 1, 2, 3 });
+                    }
+
+                    zip.CreateEntry("empty/");
+                }
+
+                var outputDir = Path.Combine(workingDir.Root, "output");
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "extract", zipPath, "-o", outputDir }, log);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var files = GetFolderFiles(outputDir);
+                files.Keys.Should().BeEquivalentTo(new[] { "a.nuspec", "lib/net45/a.dll" });
+                files["lib/net45/a.dll"].Should().Equal(1, 2, 3);
+                Directory.Exists(Path.Combine(outputDir, "empty")).Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public async Task GivenThatIExtractWithoutAnOutputFolderVerifyFailure()
         {
             using (var workingDir = new TestFolder())

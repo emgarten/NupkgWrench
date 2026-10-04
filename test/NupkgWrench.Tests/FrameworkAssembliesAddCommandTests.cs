@@ -376,5 +376,38 @@ namespace NupkgWrench.Tests
                 string.Join("|", log.Messages.Where(e => e.Level == LogLevel.Error).Select(e => e.Message)).Should().Contain("--framework, --no-frameworks may not be used together.");
             }
         }
+
+        [Fact]
+        public async Task GivenThatIAddAFrameworkAssemblyWithAnInvalidFrameworkVerifyFailure()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var nuspec = new TestNuspec()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+
+                var nupkg = nuspec.CreateNupkg();
+                var path = nupkg.Save(workingDir).FullName;
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "frameworkassemblies", "add", path, "--assembly-name", "test", "--framework", "foo" }, log);
+
+                NuspecReader reader = null;
+                using (var package = new PackageArchiveReader(path))
+                {
+                    reader = package.NuspecReader;
+                }
+
+                // Assert
+                exitCode.Should().Be(1, "error expected");
+                string.Join("|", log.Messages.Where(e => e.Level == LogLevel.Error).Select(e => e.Message)).Should().Contain("Invalid framework: foo");
+                reader.GetFrameworkAssemblyGroups().Should().BeEmpty();
+            }
+        }
     }
 }

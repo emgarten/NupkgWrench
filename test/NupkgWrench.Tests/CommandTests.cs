@@ -72,6 +72,51 @@ namespace NupkgWrench.Tests
             }
         }
 
+        [Theory]
+        [InlineData("1.0", false, "1.0")]
+        [InlineData("1.0", true, "1.0.0")]
+        [InlineData("1.0.0.0", false, "1.0.0.0")]
+        [InlineData("1.0.0.0", true, "1.0.0")]
+        [InlineData("1.0.0.1", false, "1.0.0.1")]
+        [InlineData("1.0.0.1", true, "1.0.0.1")]
+        [InlineData("01.0.0", false, "01.0.0")]
+        [InlineData("01.0.0", true, "1.0.0")]
+        [InlineData("1.0.0+git", false, "1.0.0+git")]
+        [InlineData("1.0.0+git", true, "1.0.0+git")]
+        public async Task Command_VersionCommand_Normalize(string version, bool normalize, string expected)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = version
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                var args = new List<string>() { "version", zipFile.FullName };
+
+                if (normalize)
+                {
+                    args.Add("-n");
+                }
+
+                // Act
+                var exitCode = await Program.MainCore(args.ToArray(), log);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+                string.Join("|", log.Messages).Should().Be(expected);
+            }
+        }
+
         [Fact]
         public async Task Command_VersionCommand_MatchOnDirectory()
         {
@@ -614,6 +659,38 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_ValidateCommand_CorruptPackage()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var badPath = Path.Combine(workingDir.Root, "bad.nupkg");
+                File.WriteAllText(badPath, "not a zip");
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "validate", workingDir.Root }, log);
+
+                // Assert
+                exitCode.Should().Be(1);
+                log.GetMessages().Should().Contain($"valid : {zipFile.FullName}");
+                log.GetMessages().Should().Contain($"error : {badPath} : ");
+            }
+        }
+
+        [Fact]
         public async Task Command_AddFilesCommand()
         {
             using (var workingDir = new TestFolder())
@@ -713,6 +790,73 @@ namespace NupkgWrench.Tests
                 Assert.True(0 == exitCode, string.Join("|", log.Messages));
                 Assert.DoesNotContain("lib/win8/test.dll", string.Join("|", files));
                 Assert.Contains("removing", string.Join("|", log.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task Command_AddFilesCommand_MissingInputFile()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var before = File.ReadAllBytes(zipFile.FullName);
+
+                var missingFile = Path.Combine(workingDir.Root, "missing.dll");
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "add", zipFile.FullName, "-p", "lib/win8/test.dll", "-f", missingFile }, log);
+
+                // Assert
+                exitCode.Should().Be(1);
+                log.GetMessages().Should().Contain("missing.dll");
+                File.ReadAllBytes(zipFile.FullName).Should().Equal(before);
+            }
+        }
+
+        [Fact]
+        public async Task Command_RemoveFilesCommand_Wildcard()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                testPackage.AddFile("lib/net45/a.dll");
+                testPackage.AddFile("lib/net45/a.pdb");
+                testPackage.AddFile("lib/net46/a.pdb");
+                testPackage.AddFile("tools/a.pdb");
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "files", "remove", zipFile.FullName, "-p", "lib/*.pdb" }, log);
+
+                var files = GetFiles(zipFile.FullName);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+                files.Should().BeEquivalentTo(new[] { "a.nuspec", "lib/net45/a.dll", "tools/a.pdb" });
             }
         }
 
@@ -1076,6 +1220,54 @@ namespace NupkgWrench.Tests
                 // Assert
                 Assert.Equal(0, exitCode);
                 Assert.Contains("<version>2.0.0-beta</version>", string.Join("|", log.Messages));
+            }
+        }
+
+        [Theory]
+        [InlineData("files add {nupkg} -f {file}", "Missing required parameter --path.")]
+        [InlineData("files add {nupkg} -p lib/win8/test.dll", "Missing required parameter --file.")]
+        [InlineData("files remove {nupkg}", "Missing required parameter --path.")]
+        [InlineData("nuspec edit {nupkg} -s 2.0.0", "Missing required parameter --property.")]
+        [InlineData("nuspec edit {nupkg} -p version", "Missing required parameter --value.")]
+        [InlineData("nuspec contentfiles add {nupkg} --exclude **/*.txt", "Missing required parameter --include.")]
+        public async Task Command_MissingRequiredOption_VerifyFailure(string command, string expectedError)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var inputFile = Path.Combine(workingDir.Root, "test.dll");
+                File.WriteAllText(inputFile, "a");
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var before = File.ReadAllBytes(zipFile.FullName);
+
+                var args = command.Split(' ')
+                    .Select(e => e switch
+                    {
+                        "{nupkg}" => zipFile.FullName,
+                        "{file}" => inputFile,
+                        _ => e
+                    })
+                    .ToArray();
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(args, log);
+
+                // Assert
+                exitCode.Should().Be(1);
+                log.GetMessages().Should().Contain(expectedError);
+                File.ReadAllBytes(zipFile.FullName).Should().Equal(before);
             }
         }
 

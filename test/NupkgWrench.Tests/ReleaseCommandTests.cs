@@ -876,6 +876,44 @@ namespace NupkgWrench.Tests
             }
         }
 
+        [Theory]
+        [InlineData("--stable --label rc")]
+        [InlineData("--stable --new-version 2.0.0")]
+        [InlineData("--stable --four-part-version")]
+        [InlineData("--label rc --new-version 2.0.0")]
+        [InlineData("--label rc --four-part-version")]
+        [InlineData("--new-version 2.0.0 --four-part-version")]
+        public async Task Command_ReleaseCommand_InvalidOptionCombination(string options)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0-beta"
+                    }
+                };
+
+                var zipFileA = testPackageA.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                var args = new[] { "release", workingDir.Root }.Concat(options.Split(' ')).ToArray();
+
+                // Act
+                var exitCode = await Program.MainCore(args, log);
+
+                // Assert
+                Assert.Equal(1, exitCode);
+                Assert.Contains("Invalid option combination", string.Join("|", log.Messages));
+                Assert.Equal(new[] { zipFileA.FullName }, Directory.GetFiles(workingDir.Root));
+                Assert.Equal("1.0.0-beta", GetNuspec(zipFileA.FullName).GetVersion().ToNormalizedString());
+            }
+        }
+
         private static NuspecReader GetNuspec(string path)
         {
             using (var reader = new PackageArchiveReader(path))

@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 5.1.0
-* `extract` now fails without writing any files when a package contains entries that resolve outside of the output folder
+* `extract` now fails without writing any files when a package contains entries with absolute paths or paths that resolve outside of the output folder
 * Fixed `nupkgwrench` failing to start when installed with `dotnet tool install --allow-roll-forward`
 * Added readmes to the NupkgWrench and NupkgWrenchExe packages
 * NupkgWrench.exe in NupkgWrenchExe is now built with .NET 10

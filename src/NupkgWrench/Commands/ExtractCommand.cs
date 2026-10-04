@@ -111,19 +111,53 @@ namespace NupkgWrench
         }
 
         /// <summary>
-        /// Full path to extract the entry to. Throws if the path is not under the output folder.
+        /// Full path to extract the entry to. Throws if the entry is not a relative path inside the output folder.
         /// </summary>
         private static string GetEntryPath(string outputRoot, ZipArchiveEntry entry)
         {
-            var path = Path.GetFullPath(Path.Combine(outputRoot, entry.FullName.Replace('/', Path.DirectorySeparatorChar)));
-            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            var relativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
 
-            if (path.Length <= outputRoot.Length || !path.StartsWith(outputRoot, comparison))
+            // Check the entry name before resolving it. The full path comparison ignores case on Windows,
+            // which is not enough when the parent of the output folder is case sensitive.
+            if (!Path.IsPathRooted(relativePath) && !LeavesFolder(relativePath))
             {
-                throw new InvalidDataException($"Package entry '{entry.FullName}' resolves to a path outside of the output folder '{outputRoot}'. No files were extracted.");
+                var path = Path.GetFullPath(Path.Combine(outputRoot, relativePath));
+                var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+                if (path.Length > outputRoot.Length && path.StartsWith(outputRoot, comparison))
+                {
+                    return path;
+                }
             }
 
-            return path;
+            throw new InvalidDataException($"Package entry '{entry.FullName}' is not a relative path inside the output folder '{outputRoot}'. No files were extracted.");
+        }
+
+        /// <summary>
+        /// True if .. segments move the relative path above the folder it is relative to.
+        /// </summary>
+        private static bool LeavesFolder(string relativePath)
+        {
+            var depth = 0;
+
+            foreach (var segment in relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (segment == "..")
+                {
+                    depth--;
+
+                    if (depth < 0)
+                    {
+                        return true;
+                    }
+                }
+                else if (segment != ".")
+                {
+                    depth++;
+                }
+            }
+
+            return false;
         }
     }
 }

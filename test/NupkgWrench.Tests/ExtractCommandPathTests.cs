@@ -17,6 +17,8 @@ namespace NupkgWrench.Tests
         [InlineData("../evil.txt")]
         [InlineData("lib/../../evil.txt")]
         [InlineData("../out2/evil.txt")]
+        // OUT and out are different folders when the parent folder is case sensitive.
+        [InlineData("../OUT/evil.txt")]
         public async Task GivenThatAnEntryIsOutsideTheOutputFolderVerifyNothingIsExtracted(string entryName)
         {
             using (var workingDir = new TestFolder())
@@ -65,15 +67,18 @@ namespace NupkgWrench.Tests
             }
         }
 
-        [Fact]
-        public async Task GivenThatAnEntryIsRootedVerifyNothingIsExtracted()
+        [Theory]
+        [InlineData("evil.txt")]
+        [InlineData("out/evil.txt")]
+        [InlineData("OUT/evil.txt")]
+        public async Task GivenThatAnEntryIsRootedVerifyNothingIsExtracted(string target)
         {
             using (var workingDir = new TestFolder())
             {
                 // Arrange
                 var log = new TestLogger();
                 var outputDir = Path.Combine(workingDir.Root, "out");
-                var entryName = Path.Combine(workingDir.Root, "evil.txt").Replace('\\', '/');
+                var entryName = Path.Combine(workingDir.Root, target).Replace('\\', '/');
                 var path = CreateNupkg(workingDir, "lib/net45/a.dll", entryName);
 
                 // Act
@@ -84,15 +89,18 @@ namespace NupkgWrench.Tests
             }
         }
 
-        [WindowsFact]
-        public async Task GivenThatAnEntryIsRootedWithoutADriveVerifyNothingIsExtracted()
+        [WindowsTheory]
+        [InlineData("evil.txt")]
+        [InlineData("out/evil.txt")]
+        [InlineData("OUT/evil.txt")]
+        public async Task GivenThatAnEntryIsRootedWithoutADriveVerifyNothingIsExtracted(string target)
         {
             using (var workingDir = new TestFolder())
             {
                 // Arrange
                 var log = new TestLogger();
                 var outputDir = Path.Combine(workingDir.Root, "out");
-                var evilPath = Path.Combine(workingDir.Root, "evil.txt");
+                var evilPath = Path.Combine(workingDir.Root, target);
                 var entryName = "/" + Path.GetRelativePath(Path.GetPathRoot(evilPath), evilPath).Replace('\\', '/');
                 var path = CreateNupkg(workingDir, "lib/net45/a.dll", entryName);
 
@@ -101,6 +109,27 @@ namespace NupkgWrench.Tests
 
                 // Assert
                 VerifyEntryRejected(workingDir, path, entryName, exitCode, log);
+            }
+        }
+
+        [Theory]
+        [InlineData("./a.txt")]
+        [InlineData("lib/../a.txt")]
+        public async Task GivenThatAnEntryHasDotSegmentsInsideTheOutputFolderVerifyItIsExtracted(string entryName)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+                var outputDir = Path.Combine(workingDir.Root, "out");
+                var path = CreateNupkg(workingDir, entryName);
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "extract", path, "-o", outputDir }, log);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+                GetFiles(outputDir).Should().BeEquivalentTo(new[] { "a.nuspec", "a.txt" });
             }
         }
 
@@ -167,7 +196,7 @@ namespace NupkgWrench.Tests
         private static void VerifyEntryRejected(string root, string nupkgPath, string entryName, int exitCode, TestLogger log)
         {
             exitCode.Should().Be(1, log.GetMessages());
-            log.GetMessages(LogLevel.Error).Should().Contain($"Package entry '{entryName}' resolves to a path outside of the output folder");
+            log.GetMessages(LogLevel.Error).Should().Contain($"Package entry '{entryName}' is not a relative path inside the output folder");
 
             // Nothing is written for the package, not even the output folder.
             Directory.GetFileSystemEntries(root, "*", SearchOption.AllDirectories)

@@ -774,6 +774,60 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task DependencyCommandTests_AddToMultiplePackagesVerifyEachPackageKeepsItsGroups()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                // a has no groups and is processed before b.
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var testPackageB = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "b",
+                        Version = "1.0.0"
+                    }
+                };
+
+                testPackageB.Nuspec.Dependencies.Add(new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("x", VersionRange.Parse("1.0.0"))
+                }));
+
+                testPackageB.Nuspec.Dependencies.Add(new PackageDependencyGroup(NuGetFramework.Parse("net46"), new[] {
+                    new PackageDependency("x", VersionRange.Parse("1.0.0"))
+                }));
+
+                var zipFileA = testPackageA.Save(workingDir.Root);
+                var zipFileB = testPackageB.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "add", workingDir.Root, "--dependency-id", "y", "--dependency-version", "1.0.0" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var groupsA = GetNuspec(zipFileA.FullName).GetDependencyGroups().ToDictionary(e => e.TargetFramework.GetShortFolderName().ToLowerInvariant());
+                var groupsB = GetNuspec(zipFileB.FullName).GetDependencyGroups().ToDictionary(e => e.TargetFramework.GetShortFolderName().ToLowerInvariant());
+
+                // Assert
+                groupsA.Count.Should().Be(1);
+                groupsA["any"].Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "y" });
+                groupsB.Count.Should().Be(2);
+                groupsB["net45"].Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "x", "y" });
+                groupsB["net46"].Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "x", "y" });
+            }
+        }
+
+        [Fact]
         public async Task DependencyCommandTests_AddVerifyAddWithFramework()
         {
             using (var workingDir = new TestFolder())
@@ -864,6 +918,44 @@ namespace NupkgWrench.Tests
                 dependencyCNet46.Should().BeNull();
                 dependencyCAny.VersionRange.Should().Be(VersionRange.Parse("1.0.0"));
                 nuspecA.GetDependencyGroups().Count().Should().Be(3);
+            }
+        }
+
+        [Theory]
+        [InlineData("net6.0-windows")]
+        [InlineData("net8.0-android34.0")]
+        [InlineData("net40-client")]
+        public async Task DependencyCommandTests_AddTwiceWithPlatformOrProfileFrameworkVerifySingleGroup(string framework)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFileA = testPackageA.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "add", workingDir.Root, "--dependency-id", "b", "--dependency-version", "1.0.0", "--framework", framework }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "add", workingDir.Root, "--dependency-id", "c", "--dependency-version", "1.0.0", "--framework", framework }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var nuspecA = GetNuspec(zipFileA.FullName);
+                var group = nuspecA.GetDependencyGroups().Single();
+
+                // Assert
+                group.TargetFramework.Should().Be(NuGetFramework.Parse(framework));
+                group.Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "b", "c" });
             }
         }
 
@@ -1234,6 +1326,180 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task DependencyCommandTests_EmptyGroupWithSingleUngroupedDependencyVerifyDependencyMovesToAnyGroup()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = CreateNuspec(@"<dependency id=""b"" version=""1.0.0"" />")
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", "net45" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var nuspec = GetNuspec(zipFile.FullName);
+                var groups = nuspec.GetDependencyGroups().ToDictionary(e => e.TargetFramework.GetShortFolderName().ToLowerInvariant());
+
+                // Assert
+                groups.Count.Should().Be(2);
+                groups["any"].Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "b" });
+                groups["net45"].Packages.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_EmptyGroupWithUngroupedDependencyAndGroupsVerifyUngroupedDependencyStaysIgnored()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                // NuGet ignores ungrouped dependencies when groups exist, so b and d are not dependencies before or after.
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        XMLOverride = CreateNuspec(@"<dependency id=""b"" version=""1.0.0"" />
+<dependency id=""d"" version=""1.0.0"" />
+<group targetFramework=""net46""><dependency id=""c"" version=""1.0.0"" /></group>")
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", "net45" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var nuspec = GetNuspec(zipFile.FullName);
+                var groups = nuspec.GetDependencyGroups().ToDictionary(e => e.TargetFramework.GetShortFolderName().ToLowerInvariant());
+                var rootDependencies = Util.GetMetadataElement(nuspec.Xml).Elements().Single(e => e.Name.LocalName == "dependencies")
+                    .Elements().Where(e => e.Name.LocalName == "dependency")
+                    .Select(e => e.Attribute("id").Value);
+
+                // Assert
+                groups.Count.Should().Be(2);
+                groups["net46"].Packages.Select(e => e.Id).Should().BeEquivalentTo(new[] { "c" });
+                groups["net45"].Packages.Should().BeEmpty();
+                rootDependencies.Should().BeEquivalentTo(new[] { "b", "d" });
+            }
+        }
+
+        [Theory]
+        [InlineData("net6.0-windows")]
+        [InlineData("net8.0-android34.0")]
+        [InlineData("portable-net45+win8")]
+        public async Task DependencyCommandTests_EmptyGroupTwiceWithPlatformOrProfileFrameworkVerifySingleGroup(string framework)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFileA = testPackageA.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", framework }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", framework }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                var nuspecA = GetNuspec(zipFileA.FullName);
+                var group = nuspecA.GetDependencyGroups().Single();
+
+                // Assert
+                group.TargetFramework.Should().Be(NuGetFramework.Parse(framework));
+                group.Packages.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public async Task DependencyCommandTests_EmptyGroupWithMultiplePackagesVerifyEachPackageIsUpdated()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                // a and b have a net45 group and are processed before c, which has no groups.
+                var testPackageA = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                testPackageA.Nuspec.Dependencies.Add(new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("x", VersionRange.Parse("1.0.0"))
+                }));
+
+                var testPackageB = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "b",
+                        Version = "1.0.0"
+                    }
+                };
+
+                testPackageB.Nuspec.Dependencies.Add(new PackageDependencyGroup(NuGetFramework.Parse("net45"), new[] {
+                    new PackageDependency("x", VersionRange.Parse("1.0.0"))
+                }));
+
+                var testPackageC = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "c",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFiles = new[]
+                {
+                    testPackageA.Save(workingDir.Root),
+                    testPackageB.Save(workingDir.Root),
+                    testPackageC.Save(workingDir.Root)
+                };
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "dependencies", "emptygroup", workingDir.Root, "--framework", "net45" }, log);
+                exitCode.Should().Be(0, log.GetMessages());
+
+                // Assert
+                foreach (var zipFile in zipFiles)
+                {
+                    var groups = GetNuspec(zipFile.FullName).GetDependencyGroups().ToList();
+
+                    groups.Should().ContainSingle(zipFile.Name);
+                    groups[0].TargetFramework.Should().Be(NuGetFramework.Parse("net45"), zipFile.Name);
+                    groups[0].Packages.Should().BeEmpty(zipFile.Name);
+                }
+            }
+        }
+
+        [Fact]
         public async Task DependencyCommandTests_EmptyGroupWithNoFrameworkFails()
         {
             using (var workingDir = new TestFolder())
@@ -1269,6 +1535,21 @@ namespace NupkgWrench.Tests
             {
                 return reader.NuspecReader;
             }
+        }
+
+        private static XDocument CreateNuspec(string dependencies)
+        {
+            return XDocument.Parse($@"<package xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <metadata>
+    <id>a</id>
+    <version>1.0.0</version>
+    <authors>author</authors>
+    <description>My package description.</description>
+    <dependencies>
+{dependencies}
+    </dependencies>
+  </metadata>
+</package>");
         }
     }
 }

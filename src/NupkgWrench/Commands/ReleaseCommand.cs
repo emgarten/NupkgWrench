@@ -86,7 +86,7 @@ namespace NupkgWrench
                     var packages = Util.GetPackagesWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
                     var packageSet = new List<Tuple<string, PackageIdentity, string, XDocument, PackageIdentity>>();
-                    var updatedIds = new HashSet<string>();
+                    var updatedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     var fileNameUpdates = new Dictionary<string, string>(StringComparer.Ordinal);
 
                     foreach (var package in packages)
@@ -191,11 +191,10 @@ namespace NupkgWrench
                                 // Modify the range if needed
                                 if (rangeAttribute != null && !string.IsNullOrWhiteSpace(rangeAttribute.Value))
                                 {
-                                    var range = VersionRange.Parse(rangeAttribute.Value);
-
                                     // Verify the original range is valid.
-                                    if (range.HasLowerAndUpperBounds
-                                        && VersionComparer.VersionRelease.Compare(range.MinVersion, range.MaxVersion) > 0)
+                                    if (!VersionRange.TryParse(rangeAttribute.Value, out var range)
+                                        || (range.HasLowerAndUpperBounds
+                                            && VersionComparer.VersionRelease.Compare(range.MinVersion, range.MaxVersion) > 0))
                                     {
                                         log.LogWarning($"dependency range is invalid: {depId} {rangeAttribute.Value}. Skipping.");
                                         continue;
@@ -292,9 +291,14 @@ namespace NupkgWrench
                                 }
                             }
                         }
+                    }
 
+                    // Write and move packages only after all of them have been processed,
+                    // so an error above leaves every package unchanged.
+                    foreach (var package in packageSet)
+                    {
                         // Update the nuspec file in the zip
-                        Util.AddOrReplaceZipEntry(package.Item1, package.Item3, nuspec, log);
+                        Util.AddOrReplaceZipEntry(package.Item1, package.Item3, package.Item4, log);
 
                         // Move the file
                         var newPath = fileNameUpdates[package.Item1];
@@ -319,25 +323,42 @@ namespace NupkgWrench
 
         private static void VerifyNoConflicts(Dictionary<string, string> fileNameUpdates)
         {
-            var conflicts = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-
-            foreach (var pair in fileNameUpdates)
+            // Packages are renamed within their folder. Folder paths are compared as given since
+            // folders that differ only by case are different folders on a case sensitive file system.
+            foreach (var folder in fileNameUpdates.GroupBy(e => Path.GetDirectoryName(e.Value)!, StringComparer.Ordinal))
             {
-                HashSet<string>? matches;
-                if (!conflicts.TryGetValue(pair.Value, out matches))
-                {
-                    matches = new HashSet<string>(StringComparer.Ordinal);
-                    conflicts.Add(pair.Value, matches);
-                }
+                // Package ids are case insensitive, as are file names on Windows and macOS.
+                var existingNames = Directory.EnumerateFileSystemEntries(folder.Key)
+                    .Select(e => Path.GetFileName(e))
+                    .ToLookup(e => e, StringComparer.OrdinalIgnoreCase);
 
-                matches.Add(pair.Key);
-            }
-
-            foreach (var pair in conflicts)
-            {
-                if (pair.Value.Count > 1)
+                foreach (var target in folder.GroupBy(e => Path.GetFileName(e.Value), StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException($"Output file name collision on {pair.Key}. Inputs: {string.Join(", ", pair.Value)}");
+                    var targetPath = target.First().Value;
+                    var inputs = target.Select(e => e.Key).ToList();
+
+                    if (inputs.Count > 1)
+                    {
+                        throw new InvalidOperationException($"Output file name collision on {targetPath}. Inputs: {string.Join(", ", inputs)}");
+                    }
+
+                    var inputName = Path.GetFileName(inputs[0]);
+
+                    if (!string.Equals(inputName, target.Key, StringComparison.Ordinal))
+                    {
+                        // The input itself is listed when only the case of its name changes.
+                        var existingCount = existingNames[target.Key].Count();
+
+                        if (string.Equals(inputName, target.Key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existingCount--;
+                        }
+
+                        if (existingCount > 0)
+                        {
+                            throw new InvalidOperationException($"Output file name collision on {targetPath}. The file already exists. Input: {inputs[0]}");
+                        }
+                    }
                 }
             }
         }

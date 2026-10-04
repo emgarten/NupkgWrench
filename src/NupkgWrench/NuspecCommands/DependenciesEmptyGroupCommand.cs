@@ -84,6 +84,9 @@ namespace NupkgWrench
                     {
                         log.LogMinimal($"processing {package}");
 
+                        // Frameworks without a group in this package, the full set is used for each package.
+                        var missingFrameworks = new HashSet<NuGetFramework>(frameworks);
+
                         // Get nuspec file path
                         string? nuspecPath = null;
                         XDocument? nuspecXml = null;
@@ -103,12 +106,15 @@ namespace NupkgWrench
                             metadata.Add(dependenciesNode);
                         }
 
-                        // Convert non-grouped to group
+                        // Convert non-grouped to group. NuGet ignores root dependencies when groups exist, so leave those as is.
                         var rootDeps = dependenciesNode.Elements()
                                     .Where(e => e.Name.LocalName.Equals("dependency", StringComparison.OrdinalIgnoreCase))
                                     .ToArray();
 
-                        if (rootDeps.Length > 1)
+                        var hasGroups = dependenciesNode.Elements()
+                                    .Any(e => e.Name.LocalName.Equals("group", StringComparison.OrdinalIgnoreCase));
+
+                        if (rootDeps.Length > 0 && !hasGroups)
                         {
                             var anyGroup = new XElement(XName.Get("group", ns));
                             dependenciesNode.AddFirst(anyGroup);
@@ -134,7 +140,7 @@ namespace NupkgWrench
                                 groupFramework = NuGetFramework.Parse(tfm);
                             }
 
-                            if (frameworks.Remove(groupFramework))
+                            if (missingFrameworks.Remove(groupFramework))
                             {
                                 foreach (var child in node.Elements().ToArray())
                                 {
@@ -144,7 +150,7 @@ namespace NupkgWrench
                         }
 
                         // Add empty groups for those remaining
-                        foreach (var fw in frameworks)
+                        foreach (var fw in missingFrameworks)
                         {
                             var groupNode = DependenciesUtil.CreateGroupNode(ns, fw);
 

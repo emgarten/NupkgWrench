@@ -406,6 +406,44 @@ namespace NupkgWrench.Tests
             new NuspecReader(doc).GetTitle().Should().Be("My title");
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void Util_AddOrUpdateMetadataElement_DoesNotAddMissingElementWhenValueIsEmpty(string value)
+        {
+            // Arrange
+            var doc = CreateNuspec(string.Empty);
+
+            // Act
+            Util.AddOrUpdateMetadataElement(doc, "title", value);
+
+            // Assert
+            Util.GetMetadataElement(doc).Elements().Select(e => e.Name.LocalName).Should().BeEquivalentTo(new[] { "id", "version" });
+        }
+
+        [Theory]
+        [InlineData("releaseNotes", "releaseNotes")]
+        [InlineData("releasenotes", "releaseNotes")]
+        [InlineData("RELEASENOTES", "releaseNotes")]
+        [InlineData("requirelicenseacceptance", "requireLicenseAcceptance")]
+        [InlineData("Authors", "authors")]
+        [InlineData("frameworkassemblies", "frameworkAssemblies")]
+        [InlineData("myCustom", "myCustom")]
+        public void Util_AddOrUpdateMetadataElement_AddsMissingElementWithSchemaCasing(string name, string expected)
+        {
+            // Arrange
+            var doc = CreateNuspec(string.Empty);
+
+            // Act
+            Util.AddOrUpdateMetadataElement(doc, name, "value");
+
+            // Assert
+            var element = Util.GetMetadataElement(doc).Elements().Last();
+            element.Name.Should().Be(XName.Get(expected, NuspecNamespace));
+            element.Value.Should().Be("value");
+        }
+
         [Fact]
         public void Util_AddOrUpdateMetadataElement_ThrowsWhenMetadataIsMissing()
         {

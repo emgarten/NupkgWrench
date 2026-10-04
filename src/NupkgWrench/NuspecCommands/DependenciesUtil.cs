@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 
 namespace NupkgWrench
 {
@@ -48,10 +49,11 @@ namespace NupkgWrench
                     });
                 }
 
-                // Create a default group if adding and no frameworks exist
+                // Create a default group if adding and no frameworks exist.
+                // A new set is used since the caller passes the same set for each package.
                 if (frameworks.Count < 1 && groups.Count < 1)
                 {
-                    frameworks.Add(NuGetFramework.AnyFramework);
+                    frameworks = new HashSet<NuGetFramework>() { NuGetFramework.AnyFramework };
                 }
             }
 
@@ -188,20 +190,8 @@ namespace NupkgWrench
 
             if (!fw.IsAny)
             {
-                var version = fw.Version.ToString();
-
-                if (version.EndsWith(".0.0", StringComparison.Ordinal))
-                {
-                    version = version.Substring(0, version.Length - 4);
-                }
-
-                if (version.EndsWith(".0", StringComparison.Ordinal)
-                 && version.IndexOf('.') != version.LastIndexOf('.'))
-                {
-                    version = version.Substring(0, version.Length - 2);
-                }
-
-                groupNode.Add(new XAttribute(XName.Get("targetFramework"), $"{fw.Framework}{version}"));
+                // Keeps the platform and profile, which the framework name and version alone would lose.
+                groupNode.Add(new XAttribute(XName.Get("targetFramework"), fw.GetFrameworkString()));
             }
 
             return groupNode;

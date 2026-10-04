@@ -1167,6 +1167,35 @@ namespace NupkgWrench.Tests
         }
 
         [Fact]
+        public async Task Command_FrameworkAssembliesClear_NoFrameworkAssembliesVerifyNoElementAdded()
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+                GetMetadataElementNames(zipFile.FullName).Should().BeEquivalentTo(new[] { "id", "version" });
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "frameworkassemblies", "clear", zipFile.FullName }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                GetMetadataElementNames(zipFile.FullName).Should().BeEquivalentTo(new[] { "id", "version" });
+            }
+        }
+
+        [Fact]
         public async Task Command_NuspecShowCommand()
         {
             using (var workingDir = new TestFolder())
@@ -1224,6 +1253,70 @@ namespace NupkgWrench.Tests
         }
 
         [Theory]
+        [InlineData("")]
+        [InlineData(" ")]
+        public async Task Command_NuspecEditCommand_EmptyValueForMissingElementVerifyNoElementAdded(string value)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "edit", zipFile.FullName, "-p", "title", "-s", value }, log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                GetMetadataElementNames(zipFile.FullName).Should().BeEquivalentTo(new[] { "id", "version" });
+            }
+        }
+
+        [Theory]
+        [InlineData("releaseNotes", "notes", "releaseNotes")]
+        [InlineData("releasenotes", "notes", "releaseNotes")]
+        [InlineData("requireLicenseAcceptance", "true", "requireLicenseAcceptance")]
+        [InlineData("Authors", "author", "authors")]
+        public async Task Command_NuspecEditCommand_NewElementVerifySchemaCasing(string property, string value, string expectedName)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var testPackage = new TestNupkg()
+                {
+                    Nuspec = new TestNuspec()
+                    {
+                        Id = "a",
+                        Version = "1.0.0"
+                    }
+                };
+
+                var zipFile = testPackage.Save(workingDir.Root);
+
+                var log = new TestLogger();
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "nuspec", "edit", zipFile.FullName, "-p", property, "-s", value }, log);
+                var metadata = Util.GetMetadataElement(GetNuspec(zipFile.FullName).Xml);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                metadata.Elements().Select(e => e.Name.LocalName).Should().Equal("id", "version", expectedName);
+                metadata.Elements().Last().Value.Should().Be(value);
+            }
+        }
+
+        [Theory]
         [InlineData("files add {nupkg} -f {file}", "Missing required parameter --path.")]
         [InlineData("files add {nupkg} -p lib/win8/test.dll", "Missing required parameter --file.")]
         [InlineData("files remove {nupkg}", "Missing required parameter --path.")]
@@ -1277,6 +1370,11 @@ namespace NupkgWrench.Tests
             {
                 return reader.NuspecReader;
             }
+        }
+
+        private static IEnumerable<string> GetMetadataElementNames(string path)
+        {
+            return Util.GetMetadataElement(GetNuspec(path).Xml).Elements().Select(e => e.Name.LocalName).ToList();
         }
 
         private static SortedSet<string> GetFiles(string path)

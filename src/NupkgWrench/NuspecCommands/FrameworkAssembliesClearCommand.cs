@@ -61,7 +61,7 @@ namespace NupkgWrench
                         }
 
                         // Remove node
-                        Util.AddOrUpdateMetadataElement(nuspecXml!, "frameworkAssemblies", value: null!);
+                        Util.AddOrUpdateMetadataElement(nuspecXml!, "frameworkAssemblies", value: null);
 
                         // Update zip
                         Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);

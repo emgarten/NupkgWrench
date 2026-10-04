@@ -18,6 +18,17 @@ namespace NupkgWrench
     public static class Util
     {
         /// <summary>
+        /// Nuspec metadata element names, cased as they are in the nuspec schema.
+        /// </summary>
+        private static readonly string[] _metadataElementNames = new[]
+        {
+            "id", "version", "title", "authors", "owners", "licenseUrl", "projectUrl", "iconUrl",
+            "requireLicenseAcceptance", "developmentDependency", "description", "summary", "releaseNotes",
+            "copyright", "language", "tags", "serviceable", "icon", "readme", "repository", "license",
+            "packageTypes", "dependencies", "frameworkAssemblies", "frameworkReferences", "references", "contentFiles"
+        };
+
+        /// <summary>
         /// Remove files from a zip
         /// </summary>
         public static void RemoveFiles(ZipArchive zip, string pathWildcard, ILogger log)
@@ -40,9 +51,10 @@ namespace NupkgWrench
         }
 
         /// <summary>
-        /// Add or update a root level metadata entry in a nuspec file
+        /// Add or update a root level metadata entry in a nuspec file.
+        /// A null or whitespace value removes the entry.
         /// </summary>
-        public static void AddOrUpdateMetadataElement(XDocument doc, string name, string value)
+        public static void AddOrUpdateMetadataElement(XDocument doc, string name, string? value)
         {
             var metadata = GetMetadataElement(doc);
 
@@ -51,26 +63,34 @@ namespace NupkgWrench
                 throw new InvalidDataException("Invalid nuspec");
             }
 
-            var doNotAdd = false;
+            var existing = metadata.Elements().Where(e => e.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            foreach (var node in metadata.Elements().Where(e => e.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray())
+            if (string.IsNullOrWhiteSpace(value))
             {
-                if (string.IsNullOrWhiteSpace(value))
+                foreach (var node in existing)
                 {
                     node.Remove();
-                    doNotAdd = true;
                 }
-                else
+            }
+            else if (existing.Length > 0)
+            {
+                foreach (var node in existing)
                 {
                     node.SetValue(value);
-                    doNotAdd = true;
                 }
             }
-
-            if (!doNotAdd)
+            else
             {
-                metadata.Add(new XElement(XName.Get(name.ToLowerInvariant(), metadata.GetDefaultNamespace().NamespaceName), value));
+                metadata.Add(new XElement(XName.Get(GetMetadataElementName(name), metadata.GetDefaultNamespace().NamespaceName), value));
             }
+        }
+
+        /// <summary>
+        /// Schema casing for known metadata element names, other names are returned as given.
+        /// </summary>
+        private static string GetMetadataElementName(string name)
+        {
+            return _metadataElementNames.FirstOrDefault(e => e.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? name;
         }
 
         /// <summary>

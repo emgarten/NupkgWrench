@@ -46,13 +46,15 @@ namespace NupkgWrench
                     }
                 }
 
-                // Normalize dir ending
-                var inputFolder = argRoot.Value!.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                var root = argRoot.Value;
 
-                if (string.IsNullOrEmpty(inputFolder) || !Directory.Exists(inputFolder))
+                if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
                 {
-                    throw new ArgumentException("Specify the path to a folder containg nupkg files.");
+                    throw new ArgumentException("Specify the path to a folder containing nupkg files.");
                 }
+
+                // Normalize dir ending
+                var inputFolder = root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
                 Directory.CreateDirectory(output.Value()!);
 

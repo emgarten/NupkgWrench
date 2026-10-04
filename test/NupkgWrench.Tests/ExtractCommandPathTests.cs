@@ -134,6 +134,27 @@ namespace NupkgWrench.Tests
         }
 
         [Theory]
+        [InlineData("./")]
+        [InlineData("lib/../")]
+        public async Task GivenThatADirectoryEntryIsTheOutputFolderVerifyAllFilesAreExtracted(string entryName)
+        {
+            using (var workingDir = new TestFolder())
+            {
+                // Arrange
+                var log = new TestLogger();
+                var outputDir = Path.Combine(workingDir.Root, "out");
+                var path = CreateNupkg(workingDir, entryName, "lib/net45/a.dll");
+
+                // Act
+                var exitCode = await Program.MainCore(new[] { "extract", path, "-o", outputDir }, log);
+
+                // Assert
+                exitCode.Should().Be(0, log.GetMessages());
+                GetFiles(outputDir).Should().BeEquivalentTo(new[] { "a.nuspec", Path.Combine("lib", "net45", "a.dll") });
+            }
+        }
+
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task GivenThatAPackageIsValidVerifyAllEntriesAreExtracted(bool trailingSeparator)

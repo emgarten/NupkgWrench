@@ -80,7 +80,7 @@ namespace NupkgWrench
                         }
 
                         // Modify value
-                        Util.AddOrUpdateMetadataElement(nuspecXml!, property.Value()!, propertyValue.Value()!);
+                        Util.AddOrUpdateMetadataElement(nuspecXml!, property.Value()!, propertyValue.Value());
 
                         // Update zip
                         Util.AddOrReplaceZipEntry(package, nuspecPath!, nuspecXml!, log);

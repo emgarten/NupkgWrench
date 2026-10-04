@@ -59,16 +59,25 @@ namespace NupkgWrench
 
                 var nupkgPath = Util.GetSinglePackageWithFilter(idFilter, versionFilter, excludeSymbolsFilter, highestVersionFilter, inputs.ToArray());
 
-                Directory.CreateDirectory(output.Value()!);
+                var outputRoot = GetOutputRoot(output.Value()!);
 
                 using (var stream = File.OpenRead(nupkgPath))
                 using (var zip = new ZipArchive(stream))
                 {
                     log.LogMinimal($"Extracting {nupkgPath} -> {output.Value()}");
 
+                    // Validate all entries before writing anything to disk.
+                    var files = new List<(ZipArchiveEntry Entry, string Path)>();
+
                     foreach (var entry in zip.Entries)
                     {
-                        var path = Path.Combine(output.Value()!, entry.FullName.Replace('/', Path.DirectorySeparatorChar));
+                        files.Add((entry, GetEntryPath(outputRoot, entry)));
+                    }
+
+                    Directory.CreateDirectory(outputRoot);
+
+                    foreach (var (entry, path) in files)
+                    {
                         var dir = Path.GetDirectoryName(path);
                         Directory.CreateDirectory(dir!);
 
@@ -84,6 +93,71 @@ namespace NupkgWrench
 
                 return 0;
             });
+        }
+
+        /// <summary>
+        /// Full path of the output folder, ending with a directory separator.
+        /// </summary>
+        private static string GetOutputRoot(string output)
+        {
+            var root = Path.GetFullPath(output);
+
+            if (!Path.EndsInDirectorySeparator(root))
+            {
+                root += Path.DirectorySeparatorChar;
+            }
+
+            return root;
+        }
+
+        /// <summary>
+        /// Full path to extract the entry to. Throws if the entry is not a relative path inside the output folder.
+        /// </summary>
+        private static string GetEntryPath(string outputRoot, ZipArchiveEntry entry)
+        {
+            var relativePath = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
+
+            // Check the entry name before resolving it. The full path comparison ignores case on Windows,
+            // which is not enough when the parent of the output folder is case sensitive.
+            if (!Path.IsPathRooted(relativePath) && !LeavesFolder(relativePath))
+            {
+                var path = Path.GetFullPath(Path.Combine(outputRoot, relativePath));
+                var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+                if (path.Length > outputRoot.Length && path.StartsWith(outputRoot, comparison))
+                {
+                    return path;
+                }
+            }
+
+            throw new InvalidDataException($"Package entry '{entry.FullName}' is not a relative path inside the output folder '{outputRoot}'. No files were extracted.");
+        }
+
+        /// <summary>
+        /// True if .. segments move the relative path above the folder it is relative to.
+        /// </summary>
+        private static bool LeavesFolder(string relativePath)
+        {
+            var depth = 0;
+
+            foreach (var segment in relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (segment == "..")
+                {
+                    depth--;
+
+                    if (depth < 0)
+                    {
+                        return true;
+                    }
+                }
+                else if (segment != ".")
+                {
+                    depth++;
+                }
+            }
+
+            return false;
         }
     }
 }

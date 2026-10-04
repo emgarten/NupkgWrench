@@ -72,11 +72,11 @@ namespace NupkgWrench.Tests
                 var log = new TestLogger();
 
                 // Act
-                var exitCode = await Program.MainCore(new[] { "files", "emptyfolder", zipFile.FullName, "-p", "lib/net45", "-p", "ref/net45" }, log);
+                var exitCode = await Program.MainCore(new[] { "files", "emptyfolder", zipFile.FullName, "-p", "lib/net45", "-p", "lib/net451", "-p", "ref/net45" }, log);
 
                 // Assert
                 exitCode.Should().Be(0, log.GetMessages());
-                GetZipEntries(zipFile.FullName).Should().Equal("a.nuspec", "lib/net45/_._", "lib/net451/c.dll", "ref/net45/_._");
+                GetZipEntries(zipFile.FullName).Should().Equal("a.nuspec", "lib/net45/_._", "lib/net451/_._", "ref/net45/_._");
             }
         }
 

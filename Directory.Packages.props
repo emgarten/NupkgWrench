@@ -5,7 +5,7 @@
 
   <ItemGroup Label="Product">
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="5.1.0" />
-    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.13" />
     <PackageVersion Include="NuGet.Packaging" Version="7.9.0" />
     <PackageVersion Include="NuGet.Protocol" Version="7.9.0" />
   </ItemGroup>
